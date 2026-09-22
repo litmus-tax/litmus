@@ -1,0 +1,21 @@
+# Module map for litmus.client: the source of truth for scripts/structure.py.
+# Layers are top-level packages (root modules are layers named by their stem);
+# each lists the layers it may import. `layering = N` records that issue N
+# tracks a module's import violations (its import check is skipped);
+# `split_pending = N` records that issue N tracks splitting it past max_lines.
+
+package = "litmus.client"
+src = "pkg/src/litmus/client"
+max_lines = 400
+
+[layers]
+__init__ = []
+models = []
+sdk = ["models"]
+cli = ["cli", "models", "__init__"]
+
+[modules]
+"__init__.py" = { doc = "Package docstring and `__version__`." }
+"models.py" = { doc = "Public client capability and JSON request shapes." }
+"sdk/client.py" = { doc = "Small HTTP boundary for a future hosted Litmus deployment: versioned endpoints over one transport." }
+"cli/__init__.py" = { doc = "The public `litmus` Typer app: capabilities, placeholder hosted commands exiting 1, and the optional pure accounting commands." }
