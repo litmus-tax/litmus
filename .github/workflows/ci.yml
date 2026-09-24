@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Sibling repositories are checked out next to this one, as in the local workspace
+# (see platform/requirements.txt).
+jobs:
+  checks:
+    name: checks and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: litmus
+      - uses: actions/checkout@v5
+        with:
+          repository: litmus-tax/accounting
+          path: accounting
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: '3.12'
+          activate-environment: true
+      - run: >-
+          uv pip install
+          -e 'accounting/pkg[dev]'
+          -e 'litmus/pkg[dev]'
+      - run: python scripts/check.py
+        working-directory: litmus
+      - run: python -m pytest pkg/tests -q
+        working-directory: litmus
