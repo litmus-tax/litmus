@@ -45,7 +45,8 @@ NOT_FOR_CLIENTS = {
   ('GET', '/v1/platform/device/{user_code}'),
 }
 """Routes for verifiers (keys and revocations) and for the app's own login pages, which
-the app's server calls on a person's behalf (access Rule 17); a CLI has no use for them."""
+the app's server calls on a person's behalf (access Rule 17); a CLI has no use for them.
+Rule 7.10.2 does not exempt them yet: specs#61."""
 
 
 def served() -> set[tuple[str, str]]:

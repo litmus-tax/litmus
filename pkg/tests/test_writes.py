@@ -108,6 +108,10 @@ def test_secrets_only_as_variables(
     'cex', 'credentials', 'set', RESOURCE, '--api-key', 'AK', '--api-secret', 'S3CRET'
   )
   assert typed.code == 1 and 'S3CRET' not in typed.stdout + typed.stderr
+  tested = keyed(
+    'cex', 'credentials', 'test', RESOURCE, '--api-key', 'AK', '--api-secret', 'S3CRET'
+  )
+  assert tested.code == 1
   assert not deployment.requests
   (tmp_path / '.env').write_text('BITGET_SECRET="from-dotenv"\n')
   result = keyed(
@@ -219,3 +223,22 @@ def test_apply_creates_resources_then_portfolios(
     'binding': {'network': 'base', 'address': '0x1'},
   }
   assert not any('/sync' in r.url.path for r in deployment.requests)
+
+
+def test_following_survives_a_gateway_error(
+  keyed: Callable[..., Result], deployment: Deployment
+):
+  """A `502` while following a job is retried, not reported as the job's failure.
+
+  # policy 02 interfaces rule 7.4
+  """
+  answers = iter(
+    [
+      httpx.Response(502, text='Bad Gateway'),
+      httpx.Response(200, json={'id': 'j', 'status': 'succeeded'}),
+    ]
+  )
+  deployment.routes[('GET', '/v1/portfolio/jobs/j')] = lambda request: next(answers)
+  result = keyed('jobs', 'watch', 'j')
+  assert (result.code, result.json()) == (0, {'id': 'j', 'status': 'succeeded'})
+  assert 'retrying' in result.stderr

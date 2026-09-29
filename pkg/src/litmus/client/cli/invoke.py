@@ -17,7 +17,7 @@ from litmus.client.cli.body import build, lookup
 from litmus.client.cli.commands import Command
 from litmus.client.cli.context import Context
 from litmus.client.cli.index import PATH_PARAMETER, Route, argument, route
-from litmus.client.models import Job, JsonObject, JsonValue
+from litmus.client.models import Job, JsonObject, JsonValue, Problem
 from litmus.client.sdk.auth import claims
 from litmus.client.sdk.client import Client, Files, ProblemError
 from litmus.client.sdk.jobs import collect, follow
@@ -140,7 +140,12 @@ def watch(context: Context, client: Client, path: str) -> Job:
           children[name] = status
           context.output.note(f'  {name}: {status}')
 
-  return follow(client, path, update=update)
+  def retry(problem: Problem):
+    """Say that a read failed and will be retried."""
+    detail = problem.get('detail') or problem.get('title') or problem['type']
+    context.output.note(f'(reading the job failed, retrying: {detail})')
+
+  return follow(client, path, update=update, retry=retry)
 
 
 def finished(context: Context, job: Job) -> int:
@@ -197,6 +202,7 @@ def run(context: Context) -> int:
   detach = getattr(args, 'detach', False)
   if response.status_code == 202 and isinstance(job, str) and not detach:
     location = urlparse(response.headers.get('Location', '')).path
+    location = location[location.find('/v1/') :] if '/v1/' in location else ''
     if '/jobs/' not in location:
       location = f'v1/{service}/jobs/{job}'
     followed = watch(context, client, location)

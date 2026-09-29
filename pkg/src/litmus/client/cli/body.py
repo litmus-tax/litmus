@@ -37,7 +37,7 @@ RESERVED = {
 }
 """Option names the CLI itself uses."""
 REFERENCE = re.compile(r'^\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))$')
-SECRET_ROUTES = ('/credentials',)
+SECRET_ROUTES = ('/credentials', '/credentials/test')
 """Routes whose body fields are secrets (access Rule 15)."""
 
 
