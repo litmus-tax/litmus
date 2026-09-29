@@ -37,6 +37,7 @@
 | `cli/discovery.py` | `litmus capabilities` and `litmus openapi <service>`. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/index.py` | The generated route index (`routes.json`): what each public route takes and answers. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/invoke.py` | Running a route command: path parameters and names to ids, query, pages, streams, jobs. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/local.py` | `litmus local …`: thin wrappers running platform's `scripts/local.py` (Docker Compose). | `cli`, `sdk`, `models`, `__init__` |
 | `cli/output.py` | Exact API bodies for machines, tables and fields for people, problems on error. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/routes.py` | Argparse parsers for route commands, with options generated from the index. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/session.py` | The credential a command sends: `LITMUS_API_KEY`, a stored key or login, or the local owner key. | `cli`, `sdk`, `models`, `__init__` |

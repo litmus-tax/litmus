@@ -34,3 +34,4 @@ cli = ["cli", "sdk", "models", "__init__"]
 "cli/body.py" = { doc = "Request bodies: options from body fields, `--body`, and `$VARIABLE` references." }
 "cli/apply.py" = { doc = "`litmus apply`: unit resources, then portfolios with their accounts, from `litmus.toml`." }
 "cli/invoke.py" = { doc = "Running a route command: path parameters and names to ids, query, pages, streams, jobs." }
+"cli/local.py" = { doc = "`litmus local …`: thin wrappers running platform's `scripts/local.py` (Docker Compose)." }
