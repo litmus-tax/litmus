@@ -5,16 +5,21 @@ policy 03 contract Rule 3.4), sends one request (or one per page with `--all`), 
 jobs, and prints the body (Rule 7.2).
 """
 
+from pathlib import Path
 import re
 import sys
 from typing_extensions import cast
+from urllib.parse import urlparse
 
+import httpx
+
+from litmus.client.cli.body import build, lookup
 from litmus.client.cli.commands import Command
 from litmus.client.cli.context import Context
-from litmus.client.cli.routes import PATH_PARAMETER, Route, argument, route
+from litmus.client.cli.index import PATH_PARAMETER, Route, argument, route
 from litmus.client.models import Job, JsonObject, JsonValue
 from litmus.client.sdk.auth import claims
-from litmus.client.sdk.client import Client, ProblemError
+from litmus.client.sdk.client import Client, Files, ProblemError
 from litmus.client.sdk.jobs import collect, follow
 
 SEGMENT = re.compile(r'^[A-Za-z0-9._:@~-]+$')
@@ -186,6 +191,52 @@ def run(context: Context) -> int:
   if getattr(args, 'all_pages', False):
     context.output.body(cast(JsonValue, collect(client, target, params)))
     return 0
-  response = client.request(command.method, target, params=params)
-  context.output.body(cast(JsonValue, response.json()) if response.content else None)
+  response = send(context, client, command, found, target, params)
+  answer = cast(JsonValue, response.json()) if response.content else None
+  job = answer.get('job') if isinstance(answer, dict) else None
+  detach = getattr(args, 'detach', False)
+  if response.status_code == 202 and isinstance(job, str) and not detach:
+    location = urlparse(response.headers.get('Location', '')).path
+    if '/jobs/' not in location:
+      location = f'v1/{service}/jobs/{job}'
+    followed = watch(context, client, location)
+    if isinstance(answer, dict) and 'id' in answer:
+      context.output.body(answer)
+      return 0 if followed['status'] == 'succeeded' else 1
+    return finished(context, followed)
+  if answer is not None or response.status_code != 204:
+    context.output.body(answer)
   return 0
+
+
+def send(
+  context: Context,
+  client: Client,
+  command: Command,
+  found: Route,
+  target: str,
+  params: dict[str, str | list[str]],
+) -> httpx.Response:
+  """Send the request, with its body, files and `Idempotency-Key`."""
+  args = context.args
+  headers = {}
+  if getattr(args, 'idempotency_key', None):
+    headers['Idempotency-Key'] = args.idempotency_key
+  files: Files | None = None
+  payload: JsonValue = None
+  if found['body'] and found['body']['media'].startswith('multipart/'):
+    paths: list[Path] = args.files
+    files = [
+      ('files', (p.name, p.read_bytes(), 'application/octet-stream')) for p in paths
+    ]
+  elif found['body']:
+    variables = lookup(context.environ, context.connection.config, context.cwd)
+    payload = build(args, command, target, variables)
+  return client.request(
+    command.method,
+    target,
+    params=params,
+    body=payload,
+    files=files,
+    headers=headers,
+  )

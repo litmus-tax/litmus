@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from litmus.client.cli.commands import UNITS, commands, unit_commands
-from litmus.client.cli.routes import route, routes_of
+from litmus.client.cli.index import route, routes_of
 from litmus.client.models import SERVICES
 
 SNAPSHOTS = Path(__file__).resolve().parents[2] / 'openapi'
@@ -18,6 +18,8 @@ SESSION = {
   ('POST', '/v1/platform/revoke'),
 }
 """`litmus auth login|logout|status` (Rule 7.5)."""
+APPLY = {('POST', '/v1/portfolio/portfolios/{portfolio_id}/apply')}
+"""`litmus apply` (Rule 8)."""
 NOT_FOR_CLIENTS = {
   ('GET', '/v1/platform/.well-known/jwks.json'),
   ('GET', '/v1/platform/.well-known/openid-configuration'),
@@ -88,9 +90,7 @@ def test_every_route_has_a_command():
   # policy 02 interfaces rule 7.10.2
   """
   calls = {generic(r) for r in covered()}
-  missing = served() - calls - DISCOVERY - SESSION - NOT_FOR_CLIENTS
-  pending = {r for r in missing if r[0] != 'GET'}
-  assert missing - pending == set()
+  assert served() - calls - DISCOVERY - SESSION - APPLY - NOT_FOR_CLIENTS == set()
 
 
 def test_every_command_has_a_route():

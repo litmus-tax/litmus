@@ -27,14 +27,17 @@
 | Module | Responsibility | May import |
 | --- | --- | --- |
 | `cli/app.py` | The `litmus` entry point: the parser, common options, and problem JSON with exit codes. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/apply.py` | `litmus apply`: unit resources, then portfolios with their accounts, from `litmus.toml`. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/auth.py` | `litmus auth login\|logout\|status`. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/body.py` | Request bodies: options from body fields, `--body`, and `$VARIABLE` references. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/commands.py` | The route command table: each command's words and the one public route it calls. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/connection.py` | The deployment URL, tenant and portfolio from options, environment and `litmus.toml`. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/context.py` | One invocation's arguments, connection, output, client and credential. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/credentials.py` | Credential stores per deployment URL: the OS keychain, or a 0600 file; locked for refreshes. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/discovery.py` | `litmus capabilities` and `litmus openapi <service>`. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/index.py` | The generated route index (`routes.json`): what each public route takes and answers. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/invoke.py` | Running a route command: path parameters and names to ids, query, pages, streams, jobs. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/output.py` | Exact API bodies for machines, tables and fields for people, problems on error. | `cli`, `sdk`, `models`, `__init__` |
-| `cli/routes.py` | The generated route index (`routes.json`) and argparse parsers built from it. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/routes.py` | Argparse parsers for route commands, with options generated from the index. | `cli`, `sdk`, `models`, `__init__` |
 | `cli/session.py` | The credential a command sends: `LITMUS_API_KEY`, a stored key or login, or the local owner key. | `cli`, `sdk`, `models`, `__init__` |
 <!-- structure:end -->
