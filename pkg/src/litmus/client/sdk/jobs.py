@@ -8,8 +8,18 @@ from collections.abc import Callable
 import time
 from typing_extensions import cast
 
-from litmus.client.models import FINISHED, Job, JsonObject, JsonValue
-from litmus.client.sdk.client import Client, Params
+from litmus.client.models import FINISHED, Job, JsonObject, JsonValue, Problem
+from litmus.client.sdk.client import Client, Params, ProblemError
+
+RETRIES = 10
+"""Transient read failures in a row a follower tolerates (about five minutes)."""
+
+
+def transient(problem: Problem) -> bool:
+  """Whether a failed read is worth retrying: a gateway error or no connection."""
+  return problem.get('status') in (502, 503, 504) or problem['type'] == (
+    'urn:litmus:problem:unavailable'
+  )
 
 
 def follow(
@@ -19,6 +29,7 @@ def follow(
   update: Callable[[Job], None],
   interval: float = 1.0,
   sleep: Callable[[float], None] | None = None,
+  retry: Callable[[Problem], None] | None = None,
 ) -> Job:
   """Poll a job until it is `succeeded`, `failed` or `cancelled`, reporting each read.
 
@@ -28,10 +39,27 @@ def follow(
     update: Called with every read of the job.
     interval: Seconds between reads; grows to at most 5.
     sleep: Waits between reads (default `time.sleep`).
+    retry: Called when a read fails transiently (a `502`, `503` or `504`, or an
+      unreachable deployment) and is retried; the job keeps running meanwhile.
+
+  Raises:
+    ProblemError: A read was refused, or failed transiently more than `RETRIES` times
+      in a row.
   """
   sleep = sleep or time.sleep
+  failures = 0
   while True:
-    job = cast(Job, client.request('GET', path).json())
+    try:
+      job = cast(Job, client.request('GET', path).json())
+    except ProblemError as error:
+      failures += 1
+      if not transient(error.problem) or failures > RETRIES:
+        raise
+      if retry is not None:
+        retry(error.problem)
+      sleep(min(30.0, 2.0 * failures))
+      continue
+    failures = 0
     update(job)
     if job['status'] in FINISHED:
       return job

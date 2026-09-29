@@ -26,6 +26,22 @@ litmus jobs watch <job> --service evm                # progress on stderr
 litmus books export <revision> --output books.zip
 ```
 
+Write commands take the route's body fields as options (a nested field such as a
+resource's `binding.network` by its own name), or the whole body with `--body JSON|@FILE|-`.
+A value that is exactly `$NAME` is read from the environment or the `.env` beside
+`litmus.toml`; credential commands accept secrets only that way or in a `--body` file:
+
+```sh
+litmus evm resource create --name treasury-base --network base --address 0x…
+litmus cex credentials set bitget --api-key '$BITGET_KEY' --api-secret '$BITGET_SECRET'
+litmus sync --account bitget         # waits for the job, progress on stderr
+litmus reconcile --detach            # prints the accepted job instead
+litmus apply --dry-run               # litmus.toml: unit resources, then portfolios
+```
+
+Commands that start a job wait for it (exit 1 unless it succeeded) unless `--detach`;
+`--idempotency-key` makes a retried `POST` return the original result.
+
 Unit commands take `<unit> …` (`evm`, `hl`, `dydx`, `cex`) and exist where the unit
 serves the route. Portfolio commands take `--portfolio`, else `LITMUS_PORTFOLIO`, else
 the one `[portfolios.<id>]` of `litmus.toml`, else the tenant's only portfolio. Flags are

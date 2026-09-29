@@ -29,5 +29,8 @@ cli = ["cli", "sdk", "models", "__init__"]
 "cli/auth.py" = { doc = "`litmus auth login|logout|status`." }
 "cli/discovery.py" = { doc = "`litmus capabilities` and `litmus openapi <service>`." }
 "cli/commands.py" = { doc = "The route command table: each command's words and the one public route it calls." }
-"cli/routes.py" = { doc = "The generated route index (`routes.json`) and argparse parsers built from it." }
+"cli/index.py" = { doc = "The generated route index (`routes.json`): what each public route takes and answers." }
+"cli/routes.py" = { doc = "Argparse parsers for route commands, with options generated from the index." }
+"cli/body.py" = { doc = "Request bodies: options from body fields, `--body`, and `$VARIABLE` references." }
+"cli/apply.py" = { doc = "`litmus apply`: unit resources, then portfolios with their accounts, from `litmus.toml`." }
 "cli/invoke.py" = { doc = "Running a route command: path parameters and names to ids, query, pages, streams, jobs." }
