@@ -6,11 +6,22 @@ JsonValue: TypeAlias = (
   str | int | float | bool | None | list['JsonValue'] | dict[str, 'JsonValue']
 )
 JsonObject: TypeAlias = dict[str, JsonValue]
-Service = Literal['platform', 'portfolio', 'evm', 'hl', 'dydx', 'cex']
-SERVICES: tuple[Service, ...] = ('platform', 'portfolio', 'evm', 'hl', 'dydx', 'cex')
+Service = Literal[
+  'platform', 'portfolio', 'evm', 'hl', 'dydx', 'cex', 'aster', 'lighter'
+]
+SERVICES: tuple[Service, ...] = (
+  'platform',
+  'portfolio',
+  'evm',
+  'hl',
+  'dydx',
+  'cex',
+  'aster',
+  'lighter',
+)
 """Every service a deployment may serve under `/v1/<service>` (policy 02 topologies term 1)."""
-Unit = Literal['evm', 'hl', 'dydx', 'cex']
-UNITS: tuple[Unit, ...] = ('evm', 'hl', 'dydx', 'cex')
+Unit = Literal['evm', 'hl', 'dydx', 'cex', 'aster', 'lighter']
+UNITS: tuple[Unit, ...] = ('evm', 'hl', 'dydx', 'cex', 'aster', 'lighter')
 
 
 class Problem(TypedDict, total=False):
