@@ -48,6 +48,27 @@ the one `[portfolios.<id>]` of `litmus.toml`, else the tenant's only portfolio. 
 the route's query parameters; `--all` follows `next_cursor` (`--all-pages` on `edits
 list`, whose own `all` parameter shows withdrawn edits: specs#60).
 
+## Local deployment
+
+`litmus local render|up|status|down|logs|migrate|bootstrap` are thin conveniences over
+Docker Compose ([Rule 7.8][rule7]): each runs platform's `scripts/local.py` with the same
+arguments, which renders the development deployment and drives it with plain `docker
+compose`. Until the self-hosted images are published they build from source, so they
+need a platform checkout (`--platform`, `LITMUS_PLATFORM_DIR`, or a `platform/` beside
+the working directory or a parent) and Docker. Run them from the directory holding the
+deployment's `.env`.
+
+```sh
+litmus local up                      # renders, starts, waits for /health; creates the owner
+litmus local up --stable --ref main  # images from a snapshot of every repository at a ref
+litmus local status
+litmus local logs api -f
+litmus local down                    # volumes and data are kept
+```
+
+After `up`, commands against the local deployment use the development owner's key that
+`up` wrote, unless another credential is configured.
+
 ## OpenAPI snapshots
 
 `openapi/<service>.json` are committed snapshots of the services' documents, and

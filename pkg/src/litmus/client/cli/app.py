@@ -14,7 +14,7 @@ from typing_extensions import TextIO
 import httpx
 
 from litmus.client import __version__
-from litmus.client.cli import apply, auth, discovery, invoke
+from litmus.client.cli import apply, auth, discovery, invoke, local
 from litmus.client.cli.commands import commands as route_commands
 from litmus.client.cli.context import Context
 from litmus.client.cli.credentials import Store, default_store
@@ -63,6 +63,7 @@ def parser() -> argparse.ArgumentParser:
   auth.add_commands(commands, common)
   discovery.add_commands(commands, common)
   apply.add_commands(commands, common)
+  local.add_commands(commands, common)
   tree = Tree(commands, common)
   for command in route_commands():
     tree.add(command, invoke.run)
