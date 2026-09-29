@@ -24,7 +24,7 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 SNAPSHOTS = ROOT / 'openapi'
 INDEX = ROOT / 'pkg/src/litmus/client/cli/routes.json'
-SERVICES = ('platform', 'portfolio', 'evm', 'hl', 'dydx', 'cex')
+SERVICES = ('platform', 'portfolio', 'evm', 'hl', 'dydx', 'cex', 'aster', 'lighter')
 METHODS = ('get', 'post', 'put', 'patch', 'delete')
 SCALARS = ('string', 'integer', 'number', 'boolean')
 

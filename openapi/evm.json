@@ -1733,7 +1733,7 @@
           "reads"
         ],
         "summary": "State",
-        "description": "The latest state, or the state replayed up to `at` (rule 46).",
+        "description": "The latest state, or the state replayed up to `at` (rule 46).\n\nA resource without a committed state (never synced successfully) is served empty, with\n`at: null`, like its compartments, items and verification.",
         "operationId": "state_v1_evm_resources__resource_id__state_get",
         "security": [
           {
@@ -7607,6 +7607,16 @@
           "min_since": {
             "type": "integer",
             "title": "Min Since"
+          },
+          "verification": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VerificationSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -7621,7 +7631,8 @@
           "synced_at",
           "stamps",
           "schema",
-          "min_since"
+          "min_since",
+          "verification"
         ],
         "title": "Resource",
         "description": "`GET /resources/{r}` (rule 2.6, sync.md rule 11.2)."
@@ -7947,7 +7958,14 @@
             "title": "Schema"
           },
           "at": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "At"
           },
           "compartments": {
@@ -7988,7 +8006,7 @@
           "catalogue"
         ],
         "title": "State",
-        "description": "`GET …/state` (rule 46)."
+        "description": "`GET …/state` (rule 46): the stored or replayed state with the version facts reads add.\n\nBefore the first sync commits a state (version 0), it has no compartments and `at` is `null`."
       },
       "SyncRequest": {
         "properties": {
@@ -8611,6 +8629,37 @@
           "status"
         ],
         "title": "VerificationInterval"
+      },
+      "VerificationSummary": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "unassessable",
+              "unavailable"
+            ],
+            "title": "Status"
+          },
+          "verified_at": {
+            "type": "string",
+            "title": "Verified At"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "verified_at",
+          "failed"
+        ],
+        "title": "VerificationSummary",
+        "description": "A resource's last verification in brief, served on `GET /resources` (rule 2.6.1)."
       },
       "VerifyRequest": {
         "properties": {

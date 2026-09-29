@@ -1,18 +1,18 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Litmus Hyperliquid",
-    "version": "hl/5"
+    "title": "Litmus Lighter",
+    "version": "lighter/1"
   },
   "paths": {
-    "/v1/hl/capabilities": {
+    "/v1/lighter/capabilities": {
       "get": {
         "tags": [
           "capabilities"
         ],
         "summary": "Capabilities",
         "description": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
-        "operationId": "capabilities_v1_hl_capabilities_get",
+        "operationId": "capabilities_v1_lighter_capabilities_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -82,14 +82,14 @@
         }
       }
     },
-    "/v1/hl/resources": {
+    "/v1/lighter/resources": {
       "get": {
         "tags": [
           "resources"
         ],
         "summary": "Resource List",
         "description": "The tenant's resources that the credential covers, by name (rule 15).",
-        "operationId": "resource_list_v1_hl_resources_get",
+        "operationId": "resource_list_v1_lighter_resources_get",
         "security": [
           {
             "HTTPBearer": []
@@ -218,7 +218,7 @@
         ],
         "summary": "Resource Create",
         "description": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
-        "operationId": "resource_create_v1_hl_resources_post",
+        "operationId": "resource_create_v1_lighter_resources_post",
         "security": [
           {
             "HTTPBearer": []
@@ -322,14 +322,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}": {
+    "/v1/lighter/resources/{resource_id}": {
       "get": {
         "tags": [
           "resources"
         ],
         "summary": "Resource Show",
         "description": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
-        "operationId": "resource_show_v1_hl_resources__resource_id__get",
+        "operationId": "resource_show_v1_lighter_resources__resource_id__get",
         "security": [
           {
             "HTTPBearer": []
@@ -420,7 +420,7 @@
         ],
         "summary": "Resource Rename",
         "description": "Rename the resource; its binding and interpretation never change (rule 2.2).",
-        "operationId": "resource_rename_v1_hl_resources__resource_id__patch",
+        "operationId": "resource_rename_v1_lighter_resources__resource_id__patch",
         "security": [
           {
             "HTTPBearer": []
@@ -521,7 +521,7 @@
         ],
         "summary": "Resource Delete",
         "description": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).\n\nTakes the per-resource lock: `409 resource-busy` while a job or debug verb writes it.",
-        "operationId": "resource_delete_v1_hl_resources__resource_id__delete",
+        "operationId": "resource_delete_v1_lighter_resources__resource_id__delete",
         "security": [
           {
             "HTTPBearer": []
@@ -607,14 +607,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}/sync": {
+    "/v1/lighter/resources/{resource_id}/sync": {
       "post": {
         "tags": [
           "jobs"
         ],
         "summary": "Start a sync job",
         "description": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
-        "operationId": "start_sync_v1_hl_resources__resource_id__sync_post",
+        "operationId": "start_sync_v1_lighter_resources__resource_id__sync_post",
         "security": [
           {
             "HTTPBearer": []
@@ -736,14 +736,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}/verification": {
+    "/v1/lighter/resources/{resource_id}/verification": {
       "post": {
         "tags": [
           "verification"
         ],
         "summary": "Start a verify job",
         "description": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
-        "operationId": "start_verify_v1_hl_resources__resource_id__verification_post",
+        "operationId": "start_verify_v1_lighter_resources__resource_id__verification_post",
         "security": [
           {
             "HTTPBearer": []
@@ -871,7 +871,7 @@
         ],
         "summary": "Verification",
         "description": "The latest verification of the current state (rule 48); `POST` runs a live one as a job.",
-        "operationId": "verification_v1_hl_resources__resource_id__verification_get",
+        "operationId": "verification_v1_lighter_resources__resource_id__verification_get",
         "security": [
           {
             "HTTPBearer": []
@@ -957,14 +957,14 @@
         }
       }
     },
-    "/v1/hl/jobs": {
+    "/v1/lighter/jobs": {
       "get": {
         "tags": [
           "jobs"
         ],
         "summary": "Job List",
         "description": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
-        "operationId": "job_list_v1_hl_jobs_get",
+        "operationId": "job_list_v1_lighter_jobs_get",
         "security": [
           {
             "HTTPBearer": []
@@ -1111,14 +1111,14 @@
         }
       }
     },
-    "/v1/hl/jobs/{job_id}": {
+    "/v1/lighter/jobs/{job_id}": {
       "get": {
         "tags": [
           "jobs"
         ],
         "summary": "Job Show",
         "description": "One job with its complete progress, and its result or error once finished.",
-        "operationId": "job_show_v1_hl_jobs__job_id__get",
+        "operationId": "job_show_v1_lighter_jobs__job_id__get",
         "security": [
           {
             "HTTPBearer": []
@@ -1204,14 +1204,14 @@
         }
       }
     },
-    "/v1/hl/jobs/{job_id}/cancel": {
+    "/v1/lighter/jobs/{job_id}/cancel": {
       "post": {
         "tags": [
           "jobs"
         ],
         "summary": "Job Cancel",
         "description": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
-        "operationId": "job_cancel_v1_hl_jobs__job_id__cancel_post",
+        "operationId": "job_cancel_v1_lighter_jobs__job_id__cancel_post",
         "security": [
           {
             "HTTPBearer": []
@@ -1297,14 +1297,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}/records": {
+    "/v1/lighter/resources/{resource_id}/records": {
       "get": {
         "tags": [
           "reads"
         ],
         "summary": "Records",
         "description": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
-        "operationId": "records_v1_hl_resources__resource_id__records_get",
+        "operationId": "records_v1_lighter_resources__resource_id__records_get",
         "security": [
           {
             "HTTPBearer": []
@@ -1546,14 +1546,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}/changes": {
+    "/v1/lighter/resources/{resource_id}/changes": {
       "get": {
         "tags": [
           "reads"
         ],
         "summary": "Changes",
         "description": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
-        "operationId": "changes_v1_hl_resources__resource_id__changes_get",
+        "operationId": "changes_v1_lighter_resources__resource_id__changes_get",
         "security": [
           {
             "HTTPBearer": []
@@ -1693,14 +1693,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}/state": {
+    "/v1/lighter/resources/{resource_id}/state": {
       "get": {
         "tags": [
           "reads"
         ],
         "summary": "State",
         "description": "The latest state, or the state replayed up to `at` (rule 46).\n\nA resource without a committed state (never synced successfully) is served empty, with\n`at: null`, like its compartments, items and verification.",
-        "operationId": "state_v1_hl_resources__resource_id__state_get",
+        "operationId": "state_v1_lighter_resources__resource_id__state_get",
         "security": [
           {
             "HTTPBearer": []
@@ -1804,14 +1804,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}/compartments": {
+    "/v1/lighter/resources/{resource_id}/compartments": {
       "get": {
         "tags": [
           "reads"
         ],
         "summary": "Compartments",
         "description": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
-        "operationId": "compartments_v1_hl_resources__resource_id__compartments_get",
+        "operationId": "compartments_v1_lighter_resources__resource_id__compartments_get",
         "security": [
           {
             "HTTPBearer": []
@@ -1897,14 +1897,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}/items": {
+    "/v1/lighter/resources/{resource_id}/items": {
       "get": {
         "tags": [
           "reads"
         ],
         "summary": "Items",
         "description": "The open items, by id, pinned to a version (rule 50).",
-        "operationId": "items_v1_hl_resources__resource_id__items_get",
+        "operationId": "items_v1_lighter_resources__resource_id__items_get",
         "security": [
           {
             "HTTPBearer": []
@@ -2042,14 +2042,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}/export": {
+    "/v1/lighter/resources/{resource_id}/export": {
       "get": {
         "tags": [
           "reads"
         ],
         "summary": "Export",
         "description": "Stream the current state with its evidence closure (rule 12).",
-        "operationId": "export_v1_hl_resources__resource_id__export_get",
+        "operationId": "export_v1_lighter_resources__resource_id__export_get",
         "security": [
           {
             "HTTPBearer": []
@@ -2136,14 +2136,14 @@
         }
       }
     },
-    "/v1/hl/resources/{resource_id}/evidence/{digest}": {
+    "/v1/lighter/resources/{resource_id}/evidence/{digest}": {
       "get": {
         "tags": [
           "reads"
         ],
         "summary": "Evidence",
         "description": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).\n\nServed when any current or retired evidence row of the resource has the digest; otherwise 404.",
-        "operationId": "evidence_v1_hl_resources__resource_id__evidence__digest__get",
+        "operationId": "evidence_v1_lighter_resources__resource_id__evidence__digest__get",
         "security": [
           {
             "HTTPBearer": []
@@ -2258,271 +2258,14 @@
         }
       }
     },
-    "/v1/hl/usage": {
+    "/v1/lighter/resources/{resource_id}/credentials": {
       "get": {
         "tags": [
-          "usage"
+          "credentials"
         ],
-        "summary": "Usage Overview",
-        "description": "The usage of the covered resources by name, one page, and the tenant's own (rule 4.5).",
-        "operationId": "usage_overview_v1_hl_usage_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "period",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "enum": [
-                "month",
-                "lifetime"
-              ],
-              "type": "string",
-              "description": "The current UTC month, or the resource's whole life.",
-              "default": "month",
-              "title": "Period"
-            },
-            "description": "The current UTC month, or the resource's whole life."
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "maxLength": 1024
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Cursor"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 500,
-              "minimum": 1,
-              "default": 50,
-              "title": "Limit"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UsageOverview"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      }
-    },
-    "/v1/hl/resources/{resource_id}/usage": {
-      "get": {
-        "tags": [
-          "usage"
-        ],
-        "summary": "Resource Usage",
-        "description": "What the resource's jobs spent in the period, per meter; no provider call (rule 4.5).",
-        "operationId": "resource_usage_v1_hl_resources__resource_id__usage_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "resource_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Resource Id"
-            }
-          },
-          {
-            "name": "period",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "enum": [
-                "month",
-                "lifetime"
-              ],
-              "type": "string",
-              "description": "The current UTC month, or the resource's whole life.",
-              "default": "month",
-              "title": "Period"
-            },
-            "description": "The current UTC month, or the resource's whole life."
-          },
-          {
-            "name": "job",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Only this job.",
-              "title": "Job"
-            },
-            "description": "Only this job."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResourceUsage"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/problem+json": {},
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      }
-    },
-    "/v1/hl/resources/{resource_id}/budget": {
-      "get": {
-        "tags": [
-          "usage",
-          "budget"
-        ],
-        "summary": "Budget Show",
-        "description": "The resource's budget and its spend in the budget's period (rule 16 row 23).",
-        "operationId": "budget_show_v1_hl_resources__resource_id__budget_get",
+        "summary": "Credentials Status",
+        "description": "Whether the resource has stored credentials: fingerprint, when added, last use and last error.",
+        "operationId": "credentials_status_v1_lighter_resources__resource_id__credentials_get",
         "security": [
           {
             "HTTPBearer": []
@@ -2545,7 +2288,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Budget"
+                  "$ref": "#/components/schemas/CredentialStatus"
                 }
               }
             }
@@ -2609,12 +2352,11 @@
       },
       "put": {
         "tags": [
-          "usage",
-          "budget"
+          "credentials"
         ],
-        "summary": "Budget Set",
-        "description": "Set the resource's budget, a hard limit no scope syncs past (policy 02 access rule 7.2).",
-        "operationId": "budget_set_v1_hl_resources__resource_id__budget_put",
+        "summary": "Credentials Put",
+        "description": "Test the credentials with one provider call, then seal and store them, replacing any (policy 02 access rule 15.3).\n\n`422 credentials-rejected` when the provider refuses them; `503 credentials-unavailable`\nwithout a KEK.",
+        "operationId": "credentials_put_v1_lighter_resources__resource_id__credentials_put",
         "security": [
           {
             "HTTPBearer": []
@@ -2636,7 +2378,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BudgetRequest"
+                "$ref": "#/components/schemas/ReadOnlyToken"
               }
             }
           }
@@ -2647,7 +2389,98 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Budget"
+                  "$ref": "#/components/schemas/CredentialStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "credentials"
+        ],
+        "summary": "Credentials Delete",
+        "description": "Remove the stored credentials (idempotent).",
+        "operationId": "credentials_delete_v1_lighter_resources__resource_id__credentials_delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "resource_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Resource Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialStatus"
                 }
               }
             }
@@ -2710,14 +2543,117 @@
         }
       }
     },
-    "/v1/hl/probe": {
+    "/v1/lighter/resources/{resource_id}/credentials/test": {
+      "post": {
+        "tags": [
+          "credentials"
+        ],
+        "summary": "Credentials Test",
+        "description": "One provider call with the credentials sent; nothing is stored or retained.",
+        "operationId": "credentials_test_v1_lighter_resources__resource_id__credentials_test_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "resource_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Resource Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadOnlyToken"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialTest"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {},
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/v1/lighter/probe": {
       "post": {
         "tags": [
           "probe"
         ],
         "summary": "Probe",
         "description": "What a source is before a resource is created for it; calls are metered on the tenant.",
-        "operationId": "probe_v1_hl_probe_post",
+        "operationId": "probe_v1_lighter_probe_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2734,7 +2670,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Probe"
+                  "$ref": "#/components/schemas/ProbeResult"
                 }
               }
             }
@@ -2805,218 +2741,6 @@
   },
   "components": {
     "schemas": {
-      "Activity": {
-        "properties": {
-          "active": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Active"
-          },
-          "ledger": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PageCount"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "fills": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/PageCount"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "first_activity": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "First Activity"
-          },
-          "first_api_fill": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "First Api Fill"
-          },
-          "history": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "complete",
-                  "truncated",
-                  "unknown"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "History"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
-          }
-        },
-        "type": "object",
-        "required": [
-          "active",
-          "ledger",
-          "fills",
-          "first_activity",
-          "first_api_fill",
-          "history",
-          "error"
-        ],
-        "title": "Activity",
-        "description": "The address's own activity, from the first page of its ledger and of its fills."
-      },
-      "ArchiveEstimate": {
-        "properties": {
-          "kind": {
-            "type": "string",
-            "const": "first_sync",
-            "title": "Kind"
-          },
-          "provider": {
-            "type": "string",
-            "const": "aws_s3",
-            "title": "Provider"
-          },
-          "needed": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Needed"
-          },
-          "certain": {
-            "type": "boolean",
-            "title": "Certain"
-          },
-          "from_day": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "From Day"
-          },
-          "to_day": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "To Day"
-          },
-          "days": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Days"
-          },
-          "bytes": {
-            "type": "integer",
-            "title": "Bytes"
-          },
-          "gets": {
-            "type": "integer",
-            "title": "Gets"
-          },
-          "usd": {
-            "type": "number",
-            "title": "Usd"
-          },
-          "available": {
-            "type": "boolean",
-            "title": "Available"
-          },
-          "budget_usd": {
-            "type": "number",
-            "title": "Budget Usd"
-          },
-          "within_budget": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Within Budget"
-          },
-          "note": {
-            "type": "string",
-            "title": "Note"
-          }
-        },
-        "type": "object",
-        "required": [
-          "kind",
-          "provider",
-          "needed",
-          "certain",
-          "from_day",
-          "to_day",
-          "days",
-          "bytes",
-          "gets",
-          "usd",
-          "available",
-          "budget_usd",
-          "within_budget",
-          "note"
-        ],
-        "title": "ArchiveEstimate",
-        "description": "What a sync would read from the paid Hyperliquid archive (AWS S3, requester pays)."
-      },
       "Balance": {
         "properties": {
           "asset": {
@@ -3062,80 +2786,7 @@
           "address"
         ],
         "title": "Binding",
-        "description": "An hl resource: one HyperCore user address, immutable (units/hl/index.md rule 1)."
-      },
-      "Budget": {
-        "properties": {
-          "limit_usd": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Limit Usd"
-          },
-          "period": {
-            "type": "string",
-            "enum": [
-              "month",
-              "lifetime"
-            ],
-            "title": "Period"
-          },
-          "spent_usd": {
-            "type": "number",
-            "title": "Spent Usd"
-          },
-          "remaining_usd": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Remaining Usd"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "limit_usd",
-          "period",
-          "spent_usd",
-          "remaining_usd"
-        ],
-        "title": "Budget",
-        "description": "`GET`/`PUT …/resources/{r}/budget` (rule 4.6, rule 16 row 23): a hard limit set by a tenant admin (policy 02 access rule 7.2)."
-      },
-      "BudgetRequest": {
-        "properties": {
-          "limit_usd": {
-            "type": "number",
-            "minimum": 0.0,
-            "title": "Limit Usd"
-          },
-          "period": {
-            "type": "string",
-            "enum": [
-              "month",
-              "lifetime"
-            ],
-            "title": "Period",
-            "default": "month"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "limit_usd"
-        ],
-        "title": "BudgetRequest",
-        "description": "`PUT …/budget`: the hard limit and what it covers."
+        "description": "A lighter resource: one L1 (Ethereum) address and every Lighter account it owns, immutable."
       },
       "Capabilities": {
         "properties": {
@@ -3692,6 +3343,106 @@
         ],
         "title": "CoverageGap"
       },
+      "CredentialError": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "category",
+          "detail"
+        ],
+        "title": "CredentialError",
+        "description": "A sanitized failure of a provider call made with stored or sent credentials; never a response body or a secret."
+      },
+      "CredentialStatus": {
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "title": "Configured"
+          },
+          "fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fingerprint"
+          },
+          "added_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Added At"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CredentialError"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "configured",
+          "fingerprint",
+          "added_at",
+          "last_used_at",
+          "last_error"
+        ],
+        "title": "CredentialStatus",
+        "description": "`GET …/credentials` (rule 16 row 19; policy 02 access rule 15): never the credential itself."
+      },
+      "CredentialTest": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "error": {
+            "$ref": "#/components/schemas/CredentialError"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "CredentialTest",
+        "description": "`POST …/credentials/test` (rule 16 row 20): one provider call with the credentials sent; nothing is stored."
+      },
       "EditResolve": {
         "properties": {
           "edit_kind": {
@@ -3845,6 +3596,160 @@
         ],
         "title": "ExtraRoute",
         "description": "A unit-specific route (rule 19.2)."
+      },
+      "FillDetail": {
+        "properties": {
+          "trade_id": {
+            "type": "string",
+            "title": "Trade Id"
+          },
+          "market_id": {
+            "type": "integer",
+            "title": "Market Id"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "market_kind": {
+            "type": "string",
+            "enum": [
+              "perp",
+              "spot"
+            ],
+            "title": "Market Kind"
+          },
+          "trade_type": {
+            "type": "string",
+            "title": "Trade Type"
+          },
+          "size": {
+            "type": "string",
+            "title": "Size"
+          },
+          "price": {
+            "type": "string",
+            "title": "Price"
+          },
+          "usd_amount": {
+            "type": "string",
+            "title": "Usd Amount"
+          },
+          "sides": {
+            "items": {
+              "$ref": "#/components/schemas/Side"
+            },
+            "type": "array",
+            "title": "Sides"
+          },
+          "block_height": {
+            "type": "integer",
+            "title": "Block Height"
+          },
+          "ask_order": {
+            "type": "string",
+            "title": "Ask Order"
+          },
+          "bid_order": {
+            "type": "string",
+            "title": "Bid Order"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "trade_id",
+          "market_id",
+          "symbol",
+          "market_kind",
+          "trade_type",
+          "size",
+          "price",
+          "usd_amount",
+          "sides",
+          "block_height",
+          "ask_order",
+          "bid_order"
+        ],
+        "title": "FillDetail",
+        "description": "`lighter.fill`: one trade of a perp or spot market (`/api/v1/trades`)."
+      },
+      "FundingDetail": {
+        "properties": {
+          "account": {
+            "type": "integer",
+            "title": "Account"
+          },
+          "market_id": {
+            "type": "integer",
+            "title": "Market Id"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "position": {
+            "type": "string",
+            "title": "Position"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "venue",
+              "derived"
+            ],
+            "title": "Source"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "long",
+              "short"
+            ],
+            "title": "Direction"
+          },
+          "rate": {
+            "type": "string",
+            "title": "Rate"
+          },
+          "funding_id": {
+            "type": "integer",
+            "title": "Funding Id"
+          },
+          "discount": {
+            "type": "string",
+            "title": "Discount"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account",
+          "market_id",
+          "symbol",
+          "position",
+          "source"
+        ],
+        "title": "FundingDetail",
+        "description": "`lighter.funding`: one hourly funding payment of one position."
       },
       "Instrument": {
         "properties": {
@@ -4276,35 +4181,953 @@
         "title": "Leg",
         "description": "One signed balance effect of a record on one `(compartment, asset)` (rule 30)."
       },
-      "MeterUsage": {
+      "LeverageDetail": {
         "properties": {
-          "meter": {
+          "account": {
+            "type": "integer",
+            "title": "Account"
+          },
+          "tx_type": {
             "type": "string",
-            "title": "Meter"
+            "title": "Tx Type"
           },
-          "unit": {
+          "pubdata_type": {
             "type": "string",
-            "title": "Unit"
+            "title": "Pubdata Type"
           },
-          "quantity": {
-            "type": "number",
-            "title": "Quantity"
+          "lighter_hash": {
+            "type": "string",
+            "title": "Lighter Hash"
           },
-          "usd": {
-            "type": "number",
-            "title": "Usd"
+          "market_id": {
+            "type": "integer",
+            "title": "Market Id"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "initial_margin_fraction": {
+            "type": "integer",
+            "title": "Initial Margin Fraction"
+          },
+          "margin_mode": {
+            "type": "integer",
+            "title": "Margin Mode"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "meter",
-          "unit",
-          "quantity",
-          "usd"
+          "account",
+          "tx_type",
+          "pubdata_type",
+          "lighter_hash",
+          "market_id",
+          "symbol",
+          "initial_margin_fraction",
+          "margin_mode"
         ],
-        "title": "MeterUsage",
-        "description": "One meter's total: provider cost in USD plus the raw quantity (policy 02 interfaces rule 10.2)."
+        "title": "LeverageDetail",
+        "description": "`lighter.leverage`: a leverage or margin-mode change."
+      },
+      "LighterFillRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lighter.fill",
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/FillDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterFillRecord"
+      },
+      "LighterFundingRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lighter.funding",
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/FundingDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterFundingRecord"
+      },
+      "LighterLeverageRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lighter.leverage",
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/LeverageDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterLeverageRecord"
+      },
+      "LighterMarginRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lighter.margin",
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/MarginDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterMarginRecord"
+      },
+      "LighterMovementRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "lighter.deposit",
+              "lighter.withdraw"
+            ],
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/MovementDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterMovementRecord"
+      },
+      "LighterOpaqueResultRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lighter.opaque_result",
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/OpaqueResultDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterOpaqueResultRecord"
+      },
+      "LighterPoolRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lighter.pool",
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/PoolDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterPoolRecord"
+      },
+      "LighterStakeRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lighter.stake",
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/StakeDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterStakeRecord"
+      },
+      "LighterTransferRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lighter.transfer",
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/TransferDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterTransferRecord"
+      },
+      "LighterUnknownRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "time": {
+            "type": "string",
+            "title": "Time"
+          },
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "kind": {
+            "type": "string",
+            "const": "lighter.unknown",
+            "title": "Kind"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "correlation": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Correlation"
+          },
+          "flags": {
+            "items": {
+              "type": "string",
+              "const": "unsolicited"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/Leg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/UnknownDetail"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "time",
+          "seq",
+          "kind",
+          "reference",
+          "legs",
+          "evidence",
+          "detail"
+        ],
+        "title": "LighterUnknownRecord"
+      },
+      "MarginDetail": {
+        "properties": {
+          "account": {
+            "type": "integer",
+            "title": "Account"
+          },
+          "tx_type": {
+            "type": "string",
+            "title": "Tx Type"
+          },
+          "pubdata_type": {
+            "type": "string",
+            "title": "Pubdata Type"
+          },
+          "lighter_hash": {
+            "type": "string",
+            "title": "Lighter Hash"
+          },
+          "market_id": {
+            "type": "integer",
+            "title": "Market Id"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          },
+          "direction": {
+            "type": "integer",
+            "title": "Direction"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account",
+          "tx_type",
+          "pubdata_type",
+          "lighter_hash",
+          "market_id",
+          "symbol",
+          "amount",
+          "direction"
+        ],
+        "title": "MarginDetail",
+        "description": "`lighter.margin`: collateral moved to or from an isolated position; it stays in the account's compartment."
+      },
+      "MovementDetail": {
+        "properties": {
+          "account": {
+            "type": "integer",
+            "title": "Account"
+          },
+          "tx_type": {
+            "type": "string",
+            "title": "Tx Type"
+          },
+          "pubdata_type": {
+            "type": "string",
+            "title": "Pubdata Type"
+          },
+          "lighter_hash": {
+            "type": "string",
+            "title": "Lighter Hash"
+          },
+          "asset_symbol": {
+            "type": "string",
+            "title": "Asset Symbol"
+          },
+          "route": {
+            "type": "string",
+            "enum": [
+              "perps",
+              "spot"
+            ],
+            "title": "Route"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          },
+          "l1_tx_hash": {
+            "type": "string",
+            "title": "L1 Tx Hash"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "withdrawal_type": {
+            "type": "string",
+            "title": "Withdrawal Type"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account",
+          "tx_type",
+          "pubdata_type",
+          "lighter_hash",
+          "asset_symbol",
+          "route",
+          "amount"
+        ],
+        "title": "MovementDetail",
+        "description": "`lighter.deposit`, `lighter.withdraw`: an L1 deposit or a withdrawal."
       },
       "NoOptions": {
         "properties": {},
@@ -4313,24 +5136,52 @@
         "title": "NoOptions",
         "description": "The request body of a job kind without options: `{}` or none."
       },
-      "PageCount": {
+      "OpaqueResultDetail": {
         "properties": {
-          "count": {
+          "account": {
             "type": "integer",
-            "title": "Count"
+            "title": "Account"
           },
-          "complete": {
-            "type": "boolean",
-            "title": "Complete"
+          "pool": {
+            "type": "integer",
+            "title": "Pool"
+          },
+          "expected": {
+            "type": "string",
+            "title": "Expected"
+          },
+          "observed": {
+            "type": "string",
+            "title": "Observed"
+          },
+          "shares": {
+            "type": "string",
+            "title": "Shares"
+          },
+          "previous_checkpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Checkpoint"
           }
         },
+        "additionalProperties": false,
         "type": "object",
         "required": [
-          "count",
-          "complete"
+          "account",
+          "pool",
+          "expected",
+          "observed",
+          "shares",
+          "previous_checkpoint"
         ],
-        "title": "PageCount",
-        "description": "How many rows one history page held."
+        "title": "OpaqueResultDetail",
+        "description": "`lighter.opaque_result`: a pool-equity checkpoint's residual (rule 47)."
       },
       "PayloadChange": {
         "properties": {
@@ -4359,6 +5210,64 @@
         ],
         "title": "PayloadChange",
         "description": "A payload written after `since`, as it is now."
+      },
+      "PoolDetail": {
+        "properties": {
+          "account": {
+            "type": "integer",
+            "title": "Account"
+          },
+          "tx_type": {
+            "type": "string",
+            "title": "Tx Type"
+          },
+          "pubdata_type": {
+            "type": "string",
+            "title": "Pubdata Type"
+          },
+          "lighter_hash": {
+            "type": "string",
+            "title": "Lighter Hash"
+          },
+          "pool": {
+            "type": "integer",
+            "title": "Pool"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "mint",
+              "burn"
+            ],
+            "title": "Operation"
+          },
+          "shares": {
+            "type": "string",
+            "title": "Shares"
+          },
+          "usdc": {
+            "type": "string",
+            "title": "Usdc"
+          },
+          "operator_fee_shares": {
+            "type": "string",
+            "title": "Operator Fee Shares"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account",
+          "tx_type",
+          "pubdata_type",
+          "lighter_hash",
+          "pool",
+          "operation",
+          "shares",
+          "usdc"
+        ],
+        "title": "PoolDetail",
+        "description": "`lighter.pool`: public-pool shares minted or burned."
       },
       "Position": {
         "properties": {
@@ -4420,56 +5329,11 @@
         "title": "Position",
         "description": "An open perpetual position with venue facts only (rule 46.3); `size` is the sum of its `perpetual` legs."
       },
-      "Probe": {
-        "properties": {
-          "address": {
-            "type": "string",
-            "title": "Address"
-          },
-          "role": {
-            "$ref": "#/components/schemas/RoleInfo"
-          },
-          "activity": {
-            "$ref": "#/components/schemas/Activity"
-          },
-          "sub_accounts": {
-            "$ref": "#/components/schemas/SubAccounts"
-          },
-          "vaults": {
-            "$ref": "#/components/schemas/Vaults"
-          },
-          "estimate": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ArchiveEstimate"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "calls": {
-            "type": "integer",
-            "title": "Calls"
-          }
-        },
-        "type": "object",
-        "required": [
-          "address",
-          "role",
-          "activity",
-          "sub_accounts",
-          "vaults",
-          "estimate",
-          "calls"
-        ],
-        "title": "Probe",
-        "description": "Everything the add-account flow shows for a Hyperliquid address; each part carries its own `error`."
-      },
       "ProbeRequest": {
         "properties": {
           "address": {
             "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
             "title": "Address"
           }
         },
@@ -4479,7 +5343,90 @@
           "address"
         ],
         "title": "ProbeRequest",
-        "description": "`POST /probe`: the address to probe."
+        "description": "An address to look at."
+      },
+      "ProbeResult": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "exists": {
+            "type": "boolean",
+            "title": "Exists"
+          },
+          "accounts": {
+            "items": {
+              "$ref": "#/components/schemas/ProbedAccount"
+            },
+            "type": "array",
+            "title": "Accounts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "address",
+          "exists",
+          "accounts"
+        ],
+        "title": "ProbeResult",
+        "description": "What the address holds on Lighter."
+      },
+      "ProbedAccount": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "unified": {
+            "type": "boolean",
+            "title": "Unified"
+          },
+          "collateral": {
+            "type": "string",
+            "title": "Collateral"
+          },
+          "total_asset_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Asset Value"
+          },
+          "open_positions": {
+            "type": "integer",
+            "title": "Open Positions"
+          },
+          "recent_logs": {
+            "type": "integer",
+            "title": "Recent Logs"
+          },
+          "more_logs": {
+            "type": "boolean",
+            "title": "More Logs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "role",
+          "unified",
+          "collateral",
+          "total_asset_value",
+          "open_positions",
+          "recent_logs",
+          "more_logs"
+        ],
+        "title": "ProbedAccount",
+        "description": "One account of the address."
       },
       "Problem": {
         "properties": {
@@ -4529,86 +5476,22 @@
         "title": "Problem",
         "description": "Every non-2xx body (rule 14, RFC 9457), plus typed extension members."
       },
-      "Record": {
+      "ReadOnlyToken": {
         "properties": {
-          "id": {
+          "token": {
             "type": "string",
-            "title": "Id"
-          },
-          "time": {
-            "type": "string",
-            "title": "Time"
-          },
-          "seq": {
-            "type": "integer",
-            "title": "Seq"
-          },
-          "kind": {
-            "type": "string",
-            "title": "Kind"
-          },
-          "reference": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reference"
-          },
-          "correlation": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Correlation"
-          },
-          "flags": {
-            "items": {
-              "type": "string",
-              "const": "unsolicited"
-            },
-            "type": "array",
-            "title": "Flags"
-          },
-          "legs": {
-            "items": {
-              "$ref": "#/components/schemas/Leg"
-            },
-            "type": "array",
-            "title": "Legs"
-          },
-          "evidence": {
-            "items": {
-              "$ref": "#/components/schemas/EvidenceRef"
-            },
-            "type": "array",
-            "title": "Evidence"
-          },
-          "detail": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/JsonValue"
-            },
-            "type": "object",
-            "title": "Detail"
+            "format": "password",
+            "title": "Token",
+            "writeOnly": true
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "id",
-          "time",
-          "seq",
-          "kind",
-          "reference",
-          "legs",
-          "evidence",
-          "detail"
+          "token"
         ],
-        "title": "Record",
-        "description": "One economic event of a resource (rule 21); no other top-level field is allowed."
+        "title": "ReadOnlyToken",
+        "description": "`PUT …/credentials`: a Lighter read-only token for the address's master account."
       },
       "RecordChange": {
         "properties": {
@@ -4679,7 +5562,54 @@
           },
           "records": {
             "items": {
-              "$ref": "#/components/schemas/Record"
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/LighterFillRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/LighterFundingRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/LighterMovementRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/LighterTransferRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/LighterMarginRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/LighterLeverageRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/LighterPoolRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/LighterStakeRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/LighterOpaqueResultRecord"
+                },
+                {
+                  "$ref": "#/components/schemas/LighterUnknownRecord"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "kind",
+                "mapping": {
+                  "lighter.deposit": "#/components/schemas/LighterMovementRecord",
+                  "lighter.fill": "#/components/schemas/LighterFillRecord",
+                  "lighter.funding": "#/components/schemas/LighterFundingRecord",
+                  "lighter.leverage": "#/components/schemas/LighterLeverageRecord",
+                  "lighter.margin": "#/components/schemas/LighterMarginRecord",
+                  "lighter.opaque_result": "#/components/schemas/LighterOpaqueResultRecord",
+                  "lighter.pool": "#/components/schemas/LighterPoolRecord",
+                  "lighter.stake": "#/components/schemas/LighterStakeRecord",
+                  "lighter.transfer": "#/components/schemas/LighterTransferRecord",
+                  "lighter.unknown": "#/components/schemas/LighterUnknownRecord",
+                  "lighter.withdraw": "#/components/schemas/LighterMovementRecord"
+                }
+              }
             },
             "type": "array",
             "title": "Records"
@@ -4708,8 +5638,7 @@
           "records",
           "next_cursor"
         ],
-        "title": "RecordPage",
-        "description": "`GET …/records` (rule 29): one version-pinned page with attachments."
+        "title": "RecordPage"
       },
       "Resource": {
         "properties": {
@@ -4896,139 +5825,6 @@
         "title": "ResourceRename",
         "description": "`PATCH /resources/{r}`: only the name may change (rule 2.2)."
       },
-      "ResourceUsage": {
-        "properties": {
-          "resource": {
-            "type": "string",
-            "title": "Resource"
-          },
-          "period": {
-            "type": "string",
-            "enum": [
-              "month",
-              "lifetime"
-            ],
-            "title": "Period"
-          },
-          "since": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Since"
-          },
-          "job": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Job"
-          },
-          "usd": {
-            "type": "number",
-            "title": "Usd"
-          },
-          "meters": {
-            "items": {
-              "$ref": "#/components/schemas/MeterUsage"
-            },
-            "type": "array",
-            "title": "Meters"
-          },
-          "detail": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/JsonValue"
-            },
-            "type": "object",
-            "title": "Detail"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "resource",
-          "period",
-          "since",
-          "job",
-          "usd",
-          "meters",
-          "detail"
-        ],
-        "title": "ResourceUsage",
-        "description": "`GET …/resources/{r}/usage` (rule 4.5, rule 16 row 22): what the resource's jobs spent in the period."
-      },
-      "RoleInfo": {
-        "properties": {
-          "role": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "user",
-                  "agent",
-                  "vault",
-                  "subAccount",
-                  "missing"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Role"
-          },
-          "master": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Master"
-          },
-          "agent_of": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Agent Of"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
-          }
-        },
-        "type": "object",
-        "required": [
-          "role",
-          "master",
-          "agent_of",
-          "error"
-        ],
-        "title": "RoleInfo",
-        "description": "What Hyperliquid says the address is."
-      },
       "RouteResolve": {
         "properties": {
           "route": {
@@ -5056,24 +5852,110 @@
         "title": "RouteResolve",
         "description": "A route whose call clears the item (rule 50.2); never a command line."
       },
-      "SpotBalance": {
+      "Side": {
         "properties": {
-          "coin": {
-            "type": "string",
-            "title": "Coin"
+          "account": {
+            "type": "integer",
+            "title": "Account"
           },
-          "total": {
+          "side": {
             "type": "string",
-            "title": "Total"
+            "enum": [
+              "buy",
+              "sell"
+            ],
+            "title": "Side"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "maker",
+              "taker"
+            ],
+            "title": "Role"
+          },
+          "fee_rate": {
+            "type": "integer",
+            "title": "Fee Rate"
+          },
+          "position_before": {
+            "type": "string",
+            "title": "Position Before"
+          },
+          "realized_pnl": {
+            "type": "string",
+            "title": "Realized Pnl"
           }
         },
+        "additionalProperties": false,
         "type": "object",
         "required": [
-          "coin",
-          "total"
+          "account",
+          "side",
+          "role",
+          "fee_rate",
+          "position_before"
         ],
-        "title": "SpotBalance",
-        "description": "One non-zero spot balance."
+        "title": "Side",
+        "description": "One of the resource's accounts on a fill (two for a trade between the resource's own accounts)."
+      },
+      "StakeDetail": {
+        "properties": {
+          "account": {
+            "type": "integer",
+            "title": "Account"
+          },
+          "tx_type": {
+            "type": "string",
+            "title": "Tx Type"
+          },
+          "pubdata_type": {
+            "type": "string",
+            "title": "Pubdata Type"
+          },
+          "lighter_hash": {
+            "type": "string",
+            "title": "Lighter Hash"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "stake",
+              "unstake",
+              "unlock"
+            ],
+            "title": "Operation"
+          },
+          "asset_symbol": {
+            "type": "string",
+            "title": "Asset Symbol"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          },
+          "pool": {
+            "type": "integer",
+            "title": "Pool"
+          },
+          "shares": {
+            "type": "string",
+            "title": "Shares"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account",
+          "tx_type",
+          "pubdata_type",
+          "lighter_hash",
+          "operation",
+          "asset_symbol",
+          "amount"
+        ],
+        "title": "StakeDetail",
+        "description": "`lighter.stake`: LIT staked, unstaked into its lockup, or released from it."
       },
       "State": {
         "properties": {
@@ -5132,124 +6014,12 @@
         "title": "State",
         "description": "`GET …/state` (rule 46): the stored or replayed state with the version facts reads add.\n\nBefore the first sync commits a state (version 0), it has no compartments and `at` is `null`."
       },
-      "SubAccountInfo": {
-        "properties": {
-          "address": {
-            "type": "string",
-            "title": "Address"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "perp_account_value": {
-            "type": "string",
-            "title": "Perp Account Value"
-          },
-          "spot_balances": {
-            "items": {
-              "$ref": "#/components/schemas/SpotBalance"
-            },
-            "type": "array",
-            "title": "Spot Balances"
-          }
-        },
-        "type": "object",
-        "required": [
-          "address",
-          "name",
-          "perp_account_value",
-          "spot_balances"
-        ],
-        "title": "SubAccountInfo",
-        "description": "One sub-account of the probed master, with its balances as `subAccounts` reports them."
-      },
-      "SubAccounts": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/SubAccountInfo"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "error"
-        ],
-        "title": "SubAccounts",
-        "description": "The master's sub-accounts; each can become its own account and resource."
-      },
       "SyncRequest": {
         "properties": {
           "fetch": {
             "type": "boolean",
             "title": "Fetch",
             "default": true
-          },
-          "archive": {
-            "type": "boolean",
-            "title": "Archive",
-            "default": true
-          },
-          "archive_fills": {
-            "anyOf": [
-              {
-                "prefixItems": [
-                  {
-                    "type": "string",
-                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                  },
-                  {
-                    "type": "string",
-                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                  }
-                ],
-                "type": "array",
-                "maxItems": 2,
-                "minItems": 2
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Archive Fills"
-          },
-          "archive_funding": {
-            "anyOf": [
-              {
-                "prefixItems": [
-                  {
-                    "type": "string",
-                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                  },
-                  {
-                    "type": "string",
-                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                  }
-                ],
-                "type": "array",
-                "maxItems": 2,
-                "minItems": 2
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Archive Funding"
           }
         },
         "additionalProperties": false,
@@ -5257,90 +6027,126 @@
         "title": "SyncRequest",
         "description": "`POST …/sync` options."
       },
-      "TenantUsage": {
+      "TransferDetail": {
         "properties": {
-          "usd": {
-            "type": "number",
-            "title": "Usd"
+          "account": {
+            "type": "integer",
+            "title": "Account"
           },
-          "meters": {
-            "items": {
-              "$ref": "#/components/schemas/MeterUsage"
-            },
-            "type": "array",
-            "title": "Meters"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "usd",
-          "meters"
-        ],
-        "title": "TenantUsage",
-        "description": "What the tenant spent outside any resource (probes) in the period."
-      },
-      "UsageOverview": {
-        "properties": {
-          "period": {
+          "tx_type": {
+            "type": "string",
+            "title": "Tx Type"
+          },
+          "pubdata_type": {
+            "type": "string",
+            "title": "Pubdata Type"
+          },
+          "lighter_hash": {
+            "type": "string",
+            "title": "Lighter Hash"
+          },
+          "from_account": {
+            "type": "integer",
+            "title": "From Account"
+          },
+          "to_account": {
+            "type": "integer",
+            "title": "To Account"
+          },
+          "from_route": {
             "type": "string",
             "enum": [
-              "month",
-              "lifetime"
+              "perps",
+              "spot"
             ],
-            "title": "Period"
+            "title": "From Route"
           },
-          "since": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+          "to_route": {
+            "type": "string",
+            "enum": [
+              "perps",
+              "spot"
             ],
-            "title": "Since"
+            "title": "To Route"
           },
-          "tenant": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/TenantUsage"
-              },
-              {
-                "type": "null"
-              }
-            ]
+          "asset_symbol": {
+            "type": "string",
+            "title": "Asset Symbol"
           },
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/ResourceUsage"
-            },
-            "type": "array",
-            "title": "Items"
+          "amount": {
+            "type": "string",
+            "title": "Amount"
           },
-          "next_cursor": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+          "fee": {
+            "type": "string",
+            "title": "Fee"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "in",
+              "out",
+              "internal"
             ],
-            "title": "Next Cursor"
+            "title": "Direction"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "period",
-          "since",
-          "tenant",
-          "items",
-          "next_cursor"
+          "account",
+          "tx_type",
+          "pubdata_type",
+          "lighter_hash",
+          "from_account",
+          "to_account",
+          "from_route",
+          "to_route",
+          "asset_symbol",
+          "amount",
+          "fee",
+          "direction"
         ],
-        "title": "UsageOverview",
-        "description": "`GET /usage` (rule 16 row 22): one page of the covered resources' usage, by name, and the tenant's own."
+        "title": "TransferDetail",
+        "description": "`lighter.transfer`: an L2 transfer between accounts or between an account's perps and spot balances."
+      },
+      "UnknownDetail": {
+        "properties": {
+          "account": {
+            "type": "integer",
+            "title": "Account"
+          },
+          "tx_type": {
+            "type": "string",
+            "title": "Tx Type"
+          },
+          "pubdata_type": {
+            "type": "string",
+            "title": "Pubdata Type"
+          },
+          "lighter_hash": {
+            "type": "string",
+            "title": "Lighter Hash"
+          },
+          "raw": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Raw"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "account",
+          "tx_type",
+          "pubdata_type",
+          "lighter_hash",
+          "raw"
+        ],
+        "title": "UnknownDetail",
+        "description": "`lighter.unknown`: a log touching the resource that the unit does not interpret."
       },
       "ValidationIssue": {
         "properties": {
@@ -5376,114 +6182,6 @@
         ],
         "title": "ValidationIssue",
         "description": "One invalid request field."
-      },
-      "VaultInfo": {
-        "properties": {
-          "vault_address": {
-            "type": "string",
-            "title": "Vault Address"
-          },
-          "equity": {
-            "type": "string",
-            "title": "Equity"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
-          "leader": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Leader"
-          },
-          "is_leader": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Leader"
-          },
-          "locked_until": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Locked Until"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
-          }
-        },
-        "type": "object",
-        "required": [
-          "vault_address",
-          "equity",
-          "name",
-          "leader",
-          "is_leader",
-          "locked_until",
-          "error"
-        ],
-        "title": "VaultInfo",
-        "description": "One vault the address holds equity in."
-      },
-      "Vaults": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/VaultInfo"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "error"
-        ],
-        "title": "Vaults",
-        "description": "Vault equities of the address; they are positions of this account, not accounts of their own."
       },
       "Verification": {
         "properties": {

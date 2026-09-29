@@ -980,6 +980,12 @@
                   },
                   {
                     "$ref": "#/components/schemas/CexAccountCreate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AsterAccountCreate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/LighterAccountCreate"
                   }
                 ],
                 "discriminator": {
@@ -988,7 +994,9 @@
                     "evm": "#/components/schemas/EvmAccountCreate",
                     "hl": "#/components/schemas/HlAccountCreate",
                     "dydx": "#/components/schemas/DydxAccountCreate",
-                    "cex": "#/components/schemas/CexAccountCreate"
+                    "cex": "#/components/schemas/CexAccountCreate",
+                    "aster": "#/components/schemas/AsterAccountCreate",
+                    "lighter": "#/components/schemas/LighterAccountCreate"
                   }
                 },
                 "title": "Body"
@@ -3591,7 +3599,7 @@
           "corrections"
         ],
         "summary": "Correction New",
-        "description": "Apply a correction recorded with the token's subject and the time, or preview it (`?dry_run=true`, which needs only `read`). `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` takes a transfer out of the unmatched ones as an external movement. The `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. Records must be unlinked, unclassified transfers (404 `record-not-found`, 409 `correction-conflict`, 422 otherwise).",
+        "description": "Queue a correction job that applies the correction, recorded with the token's subject, the time and the job, or previews it (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}`, whose `result` is the `CorrectionResult`. `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` takes a transfer out of the unmatched ones as an external movement. The result's `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. The records are checked before the job is queued, and again by the job: they must be unlinked, unclassified transfers (404 `record-not-found`, 409 `correction-conflict`, 422 otherwise). An identical request of the same user joins the job already queued or running.",
         "operationId": "correction_new_v1_portfolio_portfolios__portfolio_id__corrections_post",
         "security": [
           {
@@ -3619,6 +3627,25 @@
               "title": "Dry Run"
             },
             "description": "Preview only: the effect of applying it, from a scratch derivation; nothing is written."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 255
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Retrying with the same key returns the same job instead of starting another.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Retrying with the same key returns the same job instead of starting another."
           }
         ],
         "requestBody": {
@@ -3647,12 +3674,12 @@
           }
         },
         "responses": {
-          "200": {
+          "202": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CorrectionResult"
+                  "$ref": "#/components/schemas/JobAccepted"
                 }
               }
             }
@@ -4131,7 +4158,7 @@
           "corrections"
         ],
         "summary": "Correction Withdraw",
-        "description": "Withdraw a correction as the token's subject (it stays listed with `withdrawn_at`/`withdrawn_by` and applies no more; a merge's link is deleted), or preview that (`?dry_run=true`, which needs only `read`) with the same `effect`. 409 `correction-conflict` when already withdrawn.",
+        "description": "Queue a correction job that withdraws a correction as the token's subject (it stays listed with `withdrawn_at`/`withdrawn_by`/`withdrawn_job` and applies no more; a merge's link is deleted), or previews that (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}` for the `CorrectionResult` with the same `effect`. 404 `correction-not-found`, and 409 `correction-conflict` when already withdrawn, before anything is queued.",
         "operationId": "correction_withdraw_v1_portfolio_portfolios__portfolio_id__corrections__correction_id__delete",
         "security": [
           {
@@ -4168,15 +4195,34 @@
               "title": "Dry Run"
             },
             "description": "Preview only: the effect of applying it, from a scratch derivation; nothing is written."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 255
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Retrying with the same key returns the same job instead of starting another.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Retrying with the same key returns the same job instead of starting another."
           }
         ],
         "responses": {
-          "200": {
+          "202": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CorrectionResult"
+                  "$ref": "#/components/schemas/JobAccepted"
                 }
               }
             }
@@ -7539,10 +7585,12 @@
             "required": true,
             "schema": {
               "enum": [
+                "aster",
                 "cex",
                 "dydx",
                 "evm",
-                "hl"
+                "hl",
+                "lighter"
               ],
               "type": "string",
               "title": "Unit"
@@ -7742,10 +7790,12 @@
           "unit": {
             "type": "string",
             "enum": [
+              "aster",
               "cex",
               "dydx",
               "evm",
-              "hl"
+              "hl",
+              "lighter"
             ],
             "title": "Unit"
           },
@@ -8380,6 +8430,75 @@
         "title": "ApplyResult",
         "description": "The plan comparing the declared portfolio with its database, and whether it was applied."
       },
+      "AsterAccountCreate": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "account": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account"
+          },
+          "resource_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resource Id"
+          },
+          "margin_model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "notional",
+                  "pnl_settled",
+                  "none"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Model"
+          },
+          "unit": {
+            "type": "string",
+            "const": "aster",
+            "title": "Unit"
+          },
+          "address": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "title": "Address"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "unit",
+          "address"
+        ],
+        "title": "AsterAccountCreate",
+        "description": "An Aster account: its main wallet address (units/aster rule 1); sub-accounts are their own accounts."
+      },
       "AuditReport": {
         "properties": {
           "unmatched": {
@@ -8475,35 +8594,6 @@
         ],
         "title": "AuditReport",
         "description": "Everything `litmus audit` prints."
-      },
-      "BalanceChange": {
-        "properties": {
-          "compartment": {
-            "type": "string",
-            "title": "Compartment"
-          },
-          "asset": {
-            "type": "string",
-            "title": "Asset"
-          },
-          "before": {
-            "type": "string",
-            "title": "Before"
-          },
-          "after": {
-            "type": "string",
-            "title": "After"
-          }
-        },
-        "type": "object",
-        "required": [
-          "compartment",
-          "asset",
-          "before",
-          "after"
-        ],
-        "title": "BalanceChange",
-        "description": "A latest balance the correction moves (a merge can split a transfer fee)."
       },
       "BooksRequestBody": {
         "properties": {
@@ -9096,60 +9186,6 @@
         "title": "Convention",
         "description": "The cash convention fields used by portfolio accounting."
       },
-      "CorrectionEffect": {
-        "properties": {
-          "records": {
-            "items": {
-              "$ref": "#/components/schemas/RecordEffect"
-            },
-            "type": "array",
-            "title": "Records"
-          },
-          "links": {
-            "$ref": "#/components/schemas/LinkChanges"
-          },
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/ItemChange"
-            },
-            "type": "array",
-            "title": "Items"
-          },
-          "balances": {
-            "items": {
-              "$ref": "#/components/schemas/BalanceChange"
-            },
-            "type": "array",
-            "title": "Balances"
-          },
-          "derived": {
-            "type": "boolean",
-            "title": "Derived"
-          },
-          "note": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Note"
-          }
-        },
-        "type": "object",
-        "required": [
-          "records",
-          "links",
-          "items",
-          "balances",
-          "derived",
-          "note"
-        ],
-        "title": "CorrectionEffect",
-        "description": "What applying (or withdrawing) a correction changes."
-      },
       "CorrectionEntry": {
         "properties": {
           "id": {
@@ -9226,6 +9262,28 @@
             ],
             "title": "Withdrawn By"
           },
+          "created_job": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created Job"
+          },
+          "withdrawn_job": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Withdrawn Job"
+          },
           "active": {
             "type": "boolean",
             "title": "Active"
@@ -9247,6 +9305,8 @@
           "created_by",
           "withdrawn_at",
           "withdrawn_by",
+          "created_job",
+          "withdrawn_job",
           "active",
           "links"
         ],
@@ -9287,28 +9347,6 @@
         "title": "CorrectionList",
         "description": "One page of the portfolio's corrections in application order (policy 03 contract rule 15)."
       },
-      "CorrectionResult": {
-        "properties": {
-          "dry_run": {
-            "type": "boolean",
-            "title": "Dry Run"
-          },
-          "correction": {
-            "$ref": "#/components/schemas/CorrectionEntry"
-          },
-          "effect": {
-            "$ref": "#/components/schemas/CorrectionEffect"
-          }
-        },
-        "type": "object",
-        "required": [
-          "dry_run",
-          "correction",
-          "effect"
-        ],
-        "title": "CorrectionResult",
-        "description": "A correction applied, withdrawn, or previewed (`dry_run`: nothing was written)."
-      },
       "Counterpart": {
         "properties": {
           "record": {
@@ -9326,7 +9364,8 @@
                 "network",
                 "tx_id",
                 "amount",
-                "window"
+                "window",
+                "ambiguous"
               ]
             },
             "type": "array",
@@ -10205,57 +10244,6 @@
         "title": "ImportStatus",
         "description": "The state portfolio last copied from a resource."
       },
-      "ItemChange": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "kind": {
-            "type": "string",
-            "title": "Kind"
-          },
-          "change": {
-            "type": "string",
-            "enum": [
-              "resolved",
-              "added",
-              "changed"
-            ],
-            "title": "Change"
-          },
-          "before": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/OpenItem"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "after": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/OpenItem"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "kind",
-          "change",
-          "before",
-          "after"
-        ],
-        "title": "ItemChange",
-        "description": "An open item the correction resolves, adds or changes (price gaps aside)."
-      },
       "ItemCounts": {
         "properties": {
           "total": {
@@ -10353,7 +10341,8 @@
               "derive",
               "reconcile",
               "books",
-              "replay"
+              "replay",
+              "correct"
             ],
             "title": "Kind"
           },
@@ -10659,6 +10648,75 @@
         "description": "A portfolio job's state, without its progress (`GET /jobs/{id}` has the rest)."
       },
       "JsonValue": {},
+      "LighterAccountCreate": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "account": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account"
+          },
+          "resource_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resource Id"
+          },
+          "margin_model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "notional",
+                  "pnl_settled",
+                  "none"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Model"
+          },
+          "unit": {
+            "type": "string",
+            "const": "lighter",
+            "title": "Unit"
+          },
+          "address": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "title": "Address"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "unit",
+          "address"
+        ],
+        "title": "LighterAccountCreate",
+        "description": "A Lighter L1 address; its master and sub-accounts are read by the one resource (units/lighter rule 1)."
+      },
       "Link": {
         "properties": {
           "id": {
@@ -10699,31 +10757,6 @@
         ],
         "title": "Link",
         "description": "Two records that are one internal movement."
-      },
-      "LinkChanges": {
-        "properties": {
-          "added": {
-            "items": {
-              "$ref": "#/components/schemas/Link"
-            },
-            "type": "array",
-            "title": "Added"
-          },
-          "removed": {
-            "items": {
-              "$ref": "#/components/schemas/Link"
-            },
-            "type": "array",
-            "title": "Removed"
-          }
-        },
-        "type": "object",
-        "required": [
-          "added",
-          "removed"
-        ],
-        "title": "LinkChanges",
-        "description": "Links the correction adds or removes."
       },
       "LinkCheck": {
         "properties": {
@@ -11841,72 +11874,6 @@
         "title": "RebuildRequestBody",
         "description": "Whether the units sync before a ledger rebuild imports every active account."
       },
-      "RecordEffect": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "account": {
-            "type": "string",
-            "title": "Account"
-          },
-          "unit": {
-            "type": "string",
-            "title": "Unit"
-          },
-          "type": {
-            "type": "string",
-            "title": "Type"
-          },
-          "time": {
-            "type": "string",
-            "title": "Time"
-          },
-          "asset": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Asset"
-          },
-          "amount": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Amount"
-          },
-          "before": {
-            "$ref": "#/components/schemas/RecordState"
-          },
-          "after": {
-            "$ref": "#/components/schemas/RecordState"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "account",
-          "unit",
-          "type",
-          "time",
-          "asset",
-          "amount",
-          "before",
-          "after"
-        ],
-        "title": "RecordEffect",
-        "description": "A record a correction concerns, and what the correction does to it."
-      },
       "RecordLeg": {
         "properties": {
           "asset": {
@@ -12040,44 +12007,6 @@
         ],
         "title": "RecordSide",
         "description": "A record as one side of a link or a history row: enough to show it and open its evidence at its unit."
-      },
-      "RecordState": {
-        "properties": {
-          "link": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Link"
-          },
-          "classified": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Classified"
-          },
-          "unmatched": {
-            "type": "boolean",
-            "title": "Unmatched"
-          }
-        },
-        "type": "object",
-        "required": [
-          "link",
-          "classified",
-          "unmatched"
-        ],
-        "title": "RecordState",
-        "description": "What the ledger says about one record, before or after a correction."
       },
       "Residual": {
         "properties": {
@@ -12273,10 +12202,12 @@
           "unit": {
             "type": "string",
             "enum": [
+              "aster",
               "cex",
               "dydx",
               "evm",
-              "hl"
+              "hl",
+              "lighter"
             ],
             "title": "Unit"
           },
@@ -12318,10 +12249,12 @@
           "unit": {
             "type": "string",
             "enum": [
+              "aster",
               "cex",
               "dydx",
               "evm",
-              "hl"
+              "hl",
+              "lighter"
             ],
             "title": "Unit"
           },
