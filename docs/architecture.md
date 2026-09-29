@@ -1,6 +1,6 @@
 # Architecture
 
-`litmus-client` is the public surface: the `litmus` command and an HTTP SDK, with no dependency on private Litmus packages. `models` holds the public wire shapes; `sdk/` is the transport toward a hosted deployment; `cli/` mounts the public commands and, when the `accounting` extra is installed, the pure accounting commands. The package root carries only the version.
+`litmus-tax` is the public surface: the `litmus` command and an HTTP SDK, with no dependency on private Litmus packages and no service code (policy 02 interfaces Rule 7.9). `models` holds the public wire shapes; `sdk/` is the HTTP boundary to one deployment (routes, problems, platform's grants); `cli/` is the command line: connection and credentials, output, and one module per command group. The package root carries only the version.
 
 ## Module map
 
@@ -12,17 +12,25 @@
 | Module | Responsibility | May import |
 | --- | --- | --- |
 | `__init__.py` | Package docstring and `__version__`. | — |
-| `models.py` | Public client capability and JSON request shapes. | — |
+| `models.py` | Public wire shapes the client reads: problems, jobs, platform's device code and token grants. | — |
 
 ### sdk
 
 | Module | Responsibility | May import |
 | --- | --- | --- |
-| `sdk/client.py` | Small HTTP boundary for a future hosted Litmus deployment: versioned endpoints over one transport. | `models` |
+| `sdk/auth.py` | Platform's grants for the CLI: device flow, refresh and revocation of a login; claims decoded for display. | `sdk`, `models` |
+| `sdk/client.py` | The HTTP boundary to one deployment: relative `v1/` routes over one transport, non-2xx answers raised as problems. | `sdk`, `models` |
 
 ### cli
 
 | Module | Responsibility | May import |
 | --- | --- | --- |
-| `cli/__init__.py` | The public `litmus` Typer app: capabilities, placeholder hosted commands exiting 1, and the optional pure accounting commands. | `cli`, `models`, `__init__` |
+| `cli/app.py` | The `litmus` entry point: the parser, common options, and problem JSON with exit codes. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/auth.py` | `litmus auth login\|logout\|status`. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/connection.py` | The deployment URL, tenant and portfolio from options, environment and `litmus.toml`. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/context.py` | One invocation's arguments, connection, output, client and credential. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/credentials.py` | Credential stores per deployment URL: the OS keychain, or a 0600 file; locked for refreshes. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/discovery.py` | `litmus capabilities` and `litmus openapi <service>`. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/output.py` | Exact API bodies for machines, tables and fields for people, problems on error. | `cli`, `sdk`, `models`, `__init__` |
+| `cli/session.py` | The credential a command sends: `LITMUS_API_KEY`, a stored key or login, or the local owner key. | `cli`, `sdk`, `models`, `__init__` |
 <!-- structure:end -->
