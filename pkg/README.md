@@ -1,9 +1,7 @@
-# litmus-client
+# litmus-tax
 
-The public Litmus Python client provides the `litmus` command, and HTTP SDK. Import the SDK from `litmus.client`.
-
-Hosted commands require a deployed service. The optional `accounting` extra
-provides pure offline accounting through `litmus accounting`.
+The public Litmus CLI (`litmus`) and HTTP SDK (`litmus.client`). Every command calls a
+Litmus deployment's public routes over HTTP. Licensed under Apache-2.0.
 
 See the repository documentation for usage:
 https://github.com/litmus-tax/litmus

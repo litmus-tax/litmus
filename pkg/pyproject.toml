@@ -1,22 +1,24 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "litmus-client"
+name = "litmus-tax"
 version = "0.1.0"
-description = "Public Litmus CLI and HTTP SDK"
+description = "The Litmus CLI and SDK, over HTTP"
 readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = ["httpx>=0.28,<1", "typing_extensions>=4.10"]
 
 [project.optional-dependencies]
+keychain = ["keyring>=25"]
 dev = ["pytest>=8", "ruff>=0.11,<1", "pyright>=1.1.407,<2"]
-accounting = ["litmus-accounting>=0.3,<0.4"]
 test = ["pytest>=8"]
 
 [project.scripts]
-litmus = "litmus.client.cli:main"
+litmus = "litmus.client.cli.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

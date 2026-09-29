@@ -11,11 +11,19 @@ max_lines = 400
 [layers]
 __init__ = []
 models = []
-sdk = ["models"]
-cli = ["cli", "models", "__init__"]
+sdk = ["sdk", "models"]
+cli = ["cli", "sdk", "models", "__init__"]
 
 [modules]
 "__init__.py" = { doc = "Package docstring and `__version__`." }
-"models.py" = { doc = "Public client capability and JSON request shapes." }
-"sdk/client.py" = { doc = "Small HTTP boundary for a future hosted Litmus deployment: versioned endpoints over one transport." }
-"cli/__init__.py" = { doc = "The public `litmus` Typer app: capabilities, placeholder hosted commands exiting 1, and the optional pure accounting commands." }
+"models.py" = { doc = "Public wire shapes the client reads: problems, jobs, platform's device code and token grants." }
+"sdk/client.py" = { doc = "The HTTP boundary to one deployment: relative `v1/` routes over one transport, non-2xx answers raised as problems." }
+"sdk/auth.py" = { doc = "Platform's grants for the CLI: device flow, refresh and revocation of a login; claims decoded for display." }
+"cli/app.py" = { doc = "The `litmus` entry point: the parser, common options, and problem JSON with exit codes." }
+"cli/context.py" = { doc = "One invocation's arguments, connection, output, client and credential." }
+"cli/connection.py" = { doc = "The deployment URL, tenant and portfolio from options, environment and `litmus.toml`." }
+"cli/credentials.py" = { doc = "Credential stores per deployment URL: the OS keychain, or a 0600 file; locked for refreshes." }
+"cli/session.py" = { doc = "The credential a command sends: `LITMUS_API_KEY`, a stored key or login, or the local owner key." }
+"cli/output.py" = { doc = "Exact API bodies for machines, tables and fields for people, problems on error." }
+"cli/auth.py" = { doc = "`litmus auth login|logout|status`." }
+"cli/discovery.py" = { doc = "`litmus capabilities` and `litmus openapi <service>`." }
