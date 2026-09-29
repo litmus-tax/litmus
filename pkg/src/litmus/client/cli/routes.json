@@ -1,0 +1,5865 @@
+{
+  "platform": {
+    "GET /v1/platform/.well-known/jwks.json": {
+      "summary": "Jwks",
+      "help": "Every public key that may verify a live platform token.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/.well-known/openid-configuration": {
+      "summary": "Metadata",
+      "help": "Issuer metadata: where keys and the token endpoint are and what they support.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/token": {
+      "summary": "Token",
+      "help": "Session tokens (login exchange; the CLI's device and refresh grants) and the `job` grant (form-encoded).",
+      "query": [],
+      "body": {
+        "media": "application/x-www-form-urlencoded",
+        "required": true,
+        "fields": []
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/revoke": {
+      "summary": "Revoke",
+      "help": "Revoke a job token when its job ends or is cancelled, or sign a CLI login out (`token=<job token>` or `token=lr_…`, RFC 7009 form).",
+      "query": [],
+      "body": {
+        "media": "application/x-www-form-urlencoded",
+        "required": true,
+        "fields": []
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/login/code": {
+      "summary": "Send Code",
+      "help": "Email a one-time sign-in code; `202` whether or not the email is known.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "email"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Email"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/platform/login/code/verify": {
+      "summary": "With Code",
+      "help": "Sign in with the emailed code (a new email becomes a new user).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "email"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Email"
+          },
+          {
+            "path": [
+              "code"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Code"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/login/password": {
+      "summary": "With Password",
+      "help": "Sign in with a password; an unverified email answers `403` and gets a code.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "email"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Email"
+          },
+          {
+            "path": [
+              "password"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Password"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/signup": {
+      "summary": "Sign Up",
+      "help": "Create a password user; answers `403 email-verification-required` with the code sent.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "email"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Email"
+          },
+          {
+            "path": [
+              "password"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Password"
+          },
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/login/email-verification": {
+      "summary": "Verify Email",
+      "help": "Finish a login held for email verification with the emailed code.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "pending_authentication_token"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Pending Authentication Token"
+          },
+          {
+            "path": [
+              "code"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Code"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/login/password-reset": {
+      "summary": "Request Reset",
+      "help": "Email a reset link to `<app>/reset-password?token=…`; `202` whether or not the email is known.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "email"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Email"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/platform/login/password-reset/confirm": {
+      "summary": "Reset Password",
+      "help": "Set a new password with the emailed token.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "token"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Token"
+          },
+          {
+            "path": [
+              "password"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Password"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/login/social/{provider}": {
+      "summary": "Social Url",
+      "help": "Where to send the browser for a social login (`google`); the provider returns to `redirect_uri` (registered in WorkOS) with `code` and `state`.",
+      "query": [
+        {
+          "name": "redirect_uri",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": ""
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/login/social/callback": {
+      "summary": "With Social Code",
+      "help": "Finish a social login with the returned code.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "code"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Code"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/login/refresh": {
+      "summary": "Refresh",
+      "help": "New AuthKit tokens for a live session; `401 login-refused` when it ended.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "refresh_token"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Refresh Token"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/logout": {
+      "summary": "Logout",
+      "help": "End an AuthKit session; repeatable.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "session_id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Session Id"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/device/code": {
+      "summary": "Device Code",
+      "help": "Start the CLI's device flow (RFC 8628 §3.1; form-encoded, no client authentication).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/device/{user_code}": {
+      "summary": "Device",
+      "help": "A waiting device authorization, for the person to confirm (platform session token).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/device/{user_code}/approve": {
+      "summary": "Approve",
+      "help": "Approve a waiting code: the CLI's next poll signs it in as the caller.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/device/{user_code}/deny": {
+      "summary": "Deny",
+      "help": "Deny a waiting code: the CLI's next poll answers `access_denied`.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/me": {
+      "summary": "Me",
+      "help": "The caller and every tenant they belong to.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/tenants": {
+      "summary": "List Tenants",
+      "help": "The caller's tenants with their role.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/tenants": {
+      "summary": "Create Tenant",
+      "help": "Create a tenant; the caller becomes its admin. Needs no membership: this is how a first-time user gets their workspace.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Id"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/tenants/{tenant_id}": {
+      "summary": "Show Tenant",
+      "help": "A tenant the caller belongs to, with the caller's role.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/platform/tenants/{tenant_id}": {
+      "summary": "Rename Tenant",
+      "help": "Rename a tenant (admin).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/tenants/{tenant_id}/members": {
+      "summary": "List Members",
+      "help": "Members of a tenant the caller belongs to.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/tenants/{tenant_id}/members": {
+      "summary": "Add Member",
+      "help": "Add a signed-in user by email with a role template (`role`) or a custom scope set (`scopes`) you hold (admin).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "email"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Email"
+          },
+          {
+            "path": [
+              "role"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "admin",
+              "member",
+              "accountant",
+              "viewer"
+            ],
+            "required": false,
+            "help": "Role"
+          },
+          {
+            "path": [
+              "scopes"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [
+              "read",
+              "sync",
+              "create",
+              "correct",
+              "admin"
+            ],
+            "required": false,
+            "help": "Scopes"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/tenants/{tenant_id}/principals": {
+      "summary": "List Principals",
+      "help": "Everyone the tenant's histories may name: current and former members, and API keys with their creators (any member).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/platform/tenants/{tenant_id}/members/{user_id}": {
+      "summary": "Change Role",
+      "help": "Change a member's role to a template (`role`) or a custom scope set (`scopes`) you hold (admin); the last admin cannot be demoted.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "role"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "admin",
+              "member",
+              "accountant",
+              "viewer"
+            ],
+            "required": false,
+            "help": "Role"
+          },
+          {
+            "path": [
+              "scopes"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [
+              "read",
+              "sync",
+              "create",
+              "correct",
+              "admin"
+            ],
+            "required": false,
+            "help": "Scopes"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/platform/tenants/{tenant_id}/members/{user_id}": {
+      "summary": "Remove Member",
+      "help": "Remove a member (admin) or leave (self); the last admin cannot leave.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/platform/tenants/{tenant_id}/keys": {
+      "summary": "Create Key",
+      "help": "Issue an API key (admin): the response is the only time the key is shown.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "audiences"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": true,
+            "help": "Audiences"
+          },
+          {
+            "path": [
+              "scopes"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [
+              "read",
+              "sync",
+              "create",
+              "correct",
+              "admin"
+            ],
+            "required": true,
+            "help": "Scopes"
+          },
+          {
+            "path": [
+              "resources"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Resources"
+          },
+          {
+            "path": [
+              "expires_at"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Expires At"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/tenants/{tenant_id}/keys": {
+      "summary": "List Keys",
+      "help": "The tenant's API keys, newest first, revoked and expired ones included (admin).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/tenants/{tenant_id}/keys/{key_id}": {
+      "summary": "Show Key",
+      "help": "One API key's record (admin).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/platform/tenants/{tenant_id}/keys/{key_id}": {
+      "summary": "Revoke Key",
+      "help": "Revoke an API key at once (admin); services refuse it within 60 s.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/platform/revocations": {
+      "summary": "Revocations",
+      "help": "Revoked job tokens and API keys not yet expired; public, and not cached on the way (services cache it ≤ 60 s).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    }
+  },
+  "portfolio": {
+    "GET /v1/portfolio/portfolios": {
+      "summary": "Portfolios",
+      "help": "One page of the tenant's portfolios by id, with their display names (only those in a `resources` claim, when the token has one).",
+      "query": [
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios": {
+      "summary": "Portfolio New",
+      "help": "Create a portfolio with its policy and no accounts; `label` is its display name (default none: show the id), `policy.functional_currency` (the reporting currency: an `id` of `GET /currencies`, `usd` by default) and `policy.accrual` (`monthly` by default) are its settings.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "portfolio_id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Portfolio Id"
+          },
+          {
+            "path": [
+              "label"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Label"
+          },
+          {
+            "path": [
+              "policy",
+              "functional_currency"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Functional Currency"
+          },
+          {
+            "path": [
+              "policy",
+              "cost_method"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "fifo",
+              "average",
+              "lifo",
+              "hifo"
+            ],
+            "required": false,
+            "help": "Cost Method"
+          },
+          {
+            "path": [
+              "policy",
+              "lot_scope"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "global",
+              "compartment"
+            ],
+            "required": false,
+            "help": "Lot Scope"
+          },
+          {
+            "path": [
+              "policy",
+              "price_time"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "trade_time",
+              "daily_close"
+            ],
+            "required": false,
+            "help": "Price Time"
+          },
+          {
+            "path": [
+              "policy",
+              "fiat"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Fiat"
+          },
+          {
+            "path": [
+              "policy",
+              "cash"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Cash"
+          },
+          {
+            "path": [
+              "policy",
+              "trade_valuation"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "received",
+              "given"
+            ],
+            "required": false,
+            "help": "Trade Valuation"
+          },
+          {
+            "path": [
+              "policy",
+              "fee_treatment"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "expense",
+              "capitalize"
+            ],
+            "required": false,
+            "help": "Fee Treatment"
+          },
+          {
+            "path": [
+              "policy",
+              "minor_unit"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Minor Unit"
+          },
+          {
+            "path": [
+              "policy",
+              "liability_valuation"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "cost",
+              "market"
+            ],
+            "required": false,
+            "help": "Liability Valuation"
+          },
+          {
+            "path": [
+              "policy",
+              "loan_interest"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "accrued",
+              "paid"
+            ],
+            "required": false,
+            "help": "Loan Interest"
+          },
+          {
+            "path": [
+              "policy",
+              "audit_value_allowance"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Audit Value Allowance"
+          },
+          {
+            "path": [
+              "policy",
+              "position_entry"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "carry",
+              "exchange"
+            ],
+            "required": false,
+            "help": "Position Entry"
+          },
+          {
+            "path": [
+              "policy",
+              "withdrawal_recognition"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "receipt",
+              "receivable"
+            ],
+            "required": false,
+            "help": "Withdrawal Recognition"
+          },
+          {
+            "path": [
+              "policy",
+              "claim_disposal"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "realize",
+              "carry"
+            ],
+            "required": false,
+            "help": "Claim Disposal"
+          },
+          {
+            "path": [
+              "policy",
+              "unsolicited"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "ignore",
+              "income"
+            ],
+            "required": false,
+            "help": "Unsolicited"
+          },
+          {
+            "path": [
+              "policy",
+              "accrual"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "monthly",
+              "yearly",
+              "none"
+            ],
+            "required": false,
+            "help": "Accrual"
+          },
+          {
+            "path": [
+              "policy",
+              "accrual_dates"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Accrual Dates"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}": {
+      "summary": "Portfolio Show",
+      "help": "The portfolio's display name (`label`, null when none), its policy, every field with its default made explicit (`functional_currency`, `accrual`, `minor_unit`, …), and its active and archived account counts.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/portfolio/portfolios/{portfolio_id}": {
+      "summary": "Portfolio Patch",
+      "help": "Rename (`label`: 1–100 characters, or null to show the id) and change policy fields (e.g. `{\"functional_currency\": \"euro\", \"accrual\": \"yearly\"}`), flat in one body; the others keep their values. `changes` lists every changed field. Nothing is recomputed in the request; a new reporting currency (an `id` of `GET /currencies`) has its USD rates fetched with the change (one small Terminal fetch: prices are stored in USD, so no asset is priced again). `effects` says what a policy change leaves stale (derived reads, the new currency's rates when their fetch failed (`fx`), evm accounts to re-sync for a new accrual schedule); a rename leaves nothing. A policy change queues a derive job (`derive_job`); reads serve the previous holdings and items until it finishes.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": []
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/portfolio/portfolios/{portfolio_id}": {
+      "summary": "Portfolio Remove",
+      "help": "Delete the portfolio's accounts, imports and books; the units' resources and revisions stay.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/accounts": {
+      "summary": "Accounts",
+      "help": "One page of the accounts by id, with their label, archive time, resources, import status, source verification and coverage.",
+      "query": [
+        {
+          "name": "archived",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only archived (true) or only active (false) accounts; both by default."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/accounts": {
+      "summary": "Account New",
+      "help": "Add an account (and hl sub-accounts), binding or creating its unit resources: one per confirmed network for evm (or per active network when none are given), one otherwise. Never syncs.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "label"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Label"
+          },
+          {
+            "path": [
+              "account"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Account"
+          },
+          {
+            "path": [
+              "resource_id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Resource Id"
+          },
+          {
+            "path": [
+              "margin_model"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "none",
+              "notional",
+              "pnl_settled"
+            ],
+            "required": false,
+            "help": "Margin Model"
+          },
+          {
+            "path": [
+              "unit"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "cex",
+              "dydx",
+              "evm",
+              "hl"
+            ],
+            "required": false,
+            "help": "Unit"
+          },
+          {
+            "path": [
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Address"
+          },
+          {
+            "path": [
+              "networks"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Networks"
+          },
+          {
+            "path": [
+              "venue"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "bitget",
+              "mexc",
+              "bit2me"
+            ],
+            "required": false,
+            "help": "Venue"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/accounts/{account}": {
+      "summary": "Account Show",
+      "help": "One account with its resources, import status, source verification and coverage.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/portfolio/portfolios/{portfolio_id}/accounts/{account}": {
+      "summary": "Account Patch",
+      "help": "Rename (`label`), archive or restore (`archived`), or change the margin model (re-checking its resources); the id never changes. Archiving, restoring or a margin model change queues a derive job (`derive_job`); reads serve the previous holdings and items until it finishes.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "label"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Label"
+          },
+          {
+            "path": [
+              "archived"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Archived"
+          },
+          {
+            "path": [
+              "margin_model"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "notional",
+              "pnl_settled",
+              "none"
+            ],
+            "required": false,
+            "help": "Margin Model"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/portfolio/portfolios/{portfolio_id}/accounts/{account}": {
+      "summary": "Account Remove",
+      "help": "Remove the account, its resource mapping and label; by default its unit resources are only unlinked. Imported data stays.",
+      "query": [
+        {
+          "name": "delete_resources",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Also delete the unit resources through their units (evidence stays; a resource another account reads is kept)."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/accounts/{account}/imports": {
+      "summary": "Imports",
+      "help": "Every import of the account, newest first: the `version`, `state_sha256` and `imported_at` of the state each copied (legacy revision imports: `revision_id`).",
+      "query": [
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/budget": {
+      "summary": "Budget",
+      "help": "Provider spend and next-sync estimates of every active account's resources (evm per network: Alchemy/dRPC this month; hl: the S3 archive over the resource's life), per account and in total. One read per unit, no provider call; `would_exceed` says a sync would pass a resource's limit, which its unit then refuses (a hard limit, policy 02 access Rule 7.2). The units are read with the caller's own credential.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/accounts/{account}/budget": {
+      "summary": "Account Budget Show",
+      "help": "The account's resources with their units' budget reads (`spend`, `estimate`, `would_exceed`) and the total; cex and dydx resources have none. A unit that cannot answer leaves an `error` on its resources; the units are read with the caller's own credential.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/apply": {
+      "summary": "Apply",
+      "help": "Diff the body's accounts and policy against the portfolio, then bind resources and store them (`litmus-dev apply`).",
+      "query": [
+        {
+          "name": "dry_run",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Return the plan only."
+        },
+        {
+          "name": "prune",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Delete stored accounts the body omits."
+        }
+      ],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "policy",
+              "functional_currency"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Functional Currency"
+          },
+          {
+            "path": [
+              "policy",
+              "cost_method"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "fifo",
+              "average",
+              "lifo",
+              "hifo"
+            ],
+            "required": false,
+            "help": "Cost Method"
+          },
+          {
+            "path": [
+              "policy",
+              "lot_scope"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "global",
+              "compartment"
+            ],
+            "required": false,
+            "help": "Lot Scope"
+          },
+          {
+            "path": [
+              "policy",
+              "price_time"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "trade_time",
+              "daily_close"
+            ],
+            "required": false,
+            "help": "Price Time"
+          },
+          {
+            "path": [
+              "policy",
+              "fiat"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Fiat"
+          },
+          {
+            "path": [
+              "policy",
+              "cash"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Cash"
+          },
+          {
+            "path": [
+              "policy",
+              "trade_valuation"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "received",
+              "given"
+            ],
+            "required": false,
+            "help": "Trade Valuation"
+          },
+          {
+            "path": [
+              "policy",
+              "fee_treatment"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "expense",
+              "capitalize"
+            ],
+            "required": false,
+            "help": "Fee Treatment"
+          },
+          {
+            "path": [
+              "policy",
+              "minor_unit"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Minor Unit"
+          },
+          {
+            "path": [
+              "policy",
+              "liability_valuation"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "cost",
+              "market"
+            ],
+            "required": false,
+            "help": "Liability Valuation"
+          },
+          {
+            "path": [
+              "policy",
+              "loan_interest"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "accrued",
+              "paid"
+            ],
+            "required": false,
+            "help": "Loan Interest"
+          },
+          {
+            "path": [
+              "policy",
+              "audit_value_allowance"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Audit Value Allowance"
+          },
+          {
+            "path": [
+              "policy",
+              "position_entry"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "carry",
+              "exchange"
+            ],
+            "required": false,
+            "help": "Position Entry"
+          },
+          {
+            "path": [
+              "policy",
+              "withdrawal_recognition"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "receipt",
+              "receivable"
+            ],
+            "required": false,
+            "help": "Withdrawal Recognition"
+          },
+          {
+            "path": [
+              "policy",
+              "claim_disposal"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "realize",
+              "carry"
+            ],
+            "required": false,
+            "help": "Claim Disposal"
+          },
+          {
+            "path": [
+              "policy",
+              "unsolicited"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "ignore",
+              "income"
+            ],
+            "required": false,
+            "help": "Unsolicited"
+          },
+          {
+            "path": [
+              "policy",
+              "accrual"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "monthly",
+              "yearly",
+              "none"
+            ],
+            "required": false,
+            "help": "Accrual"
+          },
+          {
+            "path": [
+              "policy",
+              "accrual_dates"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Accrual Dates"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/records": {
+      "summary": "Records",
+      "help": "One page of imported records in `(time, id)` order (500 by default, at most 5,000), with each account's coverage; follow `next_cursor` with the same filters.",
+      "query": [
+        {
+          "name": "account",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this account."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339, inclusive."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339, exclusive."
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Record type."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/state": {
+      "summary": "State",
+      "help": "Balances per compartment from translated legs up to `at` (`state`); with `valued`, prices, values and totals that never count a gap as zero.",
+      "query": [
+        {
+          "name": "account",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this account."
+        },
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "ISO 8601 instant."
+        },
+        {
+          "name": "valued",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Price and value every balance in the reporting currency, with totals (stored prices only: latest without `at`, else daily)."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/prices/gaps": {
+      "summary": "Price Gaps",
+      "help": "Missing prices: one page of the daily ones of the last fill (`POST {P}/prices`) by asset and day, most lookups first (`daily_total` counts them all), and every held asset without a usable latest price.",
+      "query": [
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/items": {
+      "summary": "Items",
+      "help": "The counts of every matching open item by kind (`total`, `counts`), and one page of the items by id, each with its resolve hint; follow `next_cursor` with the same filters. Per-account counts for every account at once are in `GET {P}/overview`.",
+      "query": [
+        {
+          "name": "account",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this account."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Item kind."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/overview": {
+      "summary": "Overview",
+      "help": "The portfolio at a glance, in one call: every account with its unit resources (each with the version, state digest, record count and time of its last import, and that import's verification summary `{status, verified_at, failed}` in policy 03 contract rule 2.6.1's shape), its open items counted by kind, its resources counted by verification status (`none`: without one), and its newest sync job; then the same counts for the whole portfolio, and its newest sync job.",
+      "query": [
+        {
+          "name": "archived",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only archived (true) or only active (false) accounts; both by default."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/valuation": {
+      "summary": "Valuation Totals",
+      "help": "The portfolio's value in the reporting currency, in one call: the total and every active account's, each split into `assets` (valued holdings), `debt` (valued liabilities, zero or negative) and `value` (net assets = assets + debt), with counts of valued holdings, gaps and holdings not valued by design, `mostly_unvalued`, and each account's `share` of the net total; then the portfolio's price gaps counted by reason, and `complete`.",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "ISO 8601 instant: value at it with daily prices. Default: the current holdings at the latest prices."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/corrections": {
+      "summary": "Corrections",
+      "help": "One page of the portfolio's corrections in application order, each with who recorded it and when, whether it was withdrawn (by whom, when) and the links it owns.",
+      "query": [
+        {
+          "name": "withdrawn",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only withdrawn (true) or only active (false) ones."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/corrections": {
+      "summary": "Correction New",
+      "help": "Apply a correction recorded with the token's subject and the time, or preview it (`?dry_run=true`, which needs only `read`). `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` takes a transfer out of the unmatched ones as an external movement. The `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. Records must be unlinked, unclassified transfers (404 `record-not-found`, 409 `correction-conflict`, 422 otherwise).",
+      "query": [
+        {
+          "name": "dry_run",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Preview only: the effect of applying it, from a scratch derivation; nothing is written."
+        }
+      ],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "kind"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "classify_boundary",
+              "merge_internal"
+            ],
+            "required": false,
+            "help": "Kind"
+          },
+          {
+            "path": [
+              "withdrawal"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Withdrawal"
+          },
+          {
+            "path": [
+              "deposit"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Deposit"
+          },
+          {
+            "path": [
+              "reason"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Reason"
+          },
+          {
+            "path": [
+              "record"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Record"
+          },
+          {
+            "path": [
+              "note"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Note"
+          },
+          {
+            "path": [
+              "ownership_retained"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Ownership Retained"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/corrections/candidates": {
+      "summary": "Correction Candidates",
+      "help": "One page of the unlinked transfers, oldest first: the active accounts' transfer-like records that no link and no `classify_boundary` covers (what `unmatched_transfer` items count, and unsolicited receipts, flagged). `total` counts every one. Their ids are what corrections take; `GET {P}/unmatched` shows each beside its nearest counterparts.",
+      "query": [
+        {
+          "name": "account",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this account."
+        },
+        {
+          "name": "asset",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this asset id (or unit symbol)."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/corrections/{correction_id}": {
+      "summary": "Correction",
+      "help": "One correction, withdrawn or not.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/portfolio/portfolios/{portfolio_id}/corrections/{correction_id}": {
+      "summary": "Correction Withdraw",
+      "help": "Withdraw a correction as the token's subject (it stays listed with `withdrawn_at`/`withdrawn_by` and applies no more; a merge's link is deleted), or preview that (`?dry_run=true`, which needs only `read`) with the same `effect`. 409 `correction-conflict` when already withdrawn.",
+      "query": [
+        {
+          "name": "dry_run",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Preview only: the effect of applying it, from a scratch derivation; nothing is written."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/reconcile": {
+      "summary": "Reconcile",
+      "help": "Queue a reconciliation: every unlinked transfer-like record is matched again by policy 01's passes, links whose record disappeared are pruned (a correction that owned one becomes a `failed_correction` item), links made by corrections or by the units' adapters are kept, and the derived holdings and open items are refreshed. The result counts links, candidates, unmatched and pruned, per pass. A reconciliation already queued or running is returned instead. Needs `sync`.",
+      "query": [],
+      "body": null,
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/links": {
+      "summary": "Links",
+      "help": "One page of links by id: each pair of records portfolio treats as one internal movement, with both records (account, time, legs, the on-chain `reference`, the unit resource and the evidence digests to open at the unit), its kind, the pass or correction that made it, and the residual (`deposit + withdrawal`: a fee or loss in transit) when both sides move one asset. A side whose record is gone is null (a dangling link, pruned by the next reconciliation).",
+      "query": [
+        {
+          "name": "account",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only links with a side in this account."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "internal_transfer",
+            "bridge",
+            "bridge_transfer",
+            "swap_bridge"
+          ],
+          "required": false,
+          "help": "Only this kind."
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "reconcile",
+            "adapter",
+            "correction"
+          ],
+          "required": false,
+          "help": "Only links a reconciliation pass (`reconcile`), a unit adapter (`adapter`) or a correction (`correction`) made."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/links/{link_id}": {
+      "summary": "Link",
+      "help": "One link with both of its records.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/unmatched": {
+      "summary": "Unmatched Legs",
+      "help": "One page of the unmatched transfer legs (the records `unmatched_transfer` items count), oldest first, each beside its `nearest` counterparts: unlinked transfer-like records of the opposite direction in any account, fewest reasons first, then nearest in time, each with why it did not link at the loosest rung of reconciliation (`same_account`, `type`, `unresolved_asset`, `asset`, `network`, `tx_id`, `amount`: above what was sent or more than 5% below it, `window`: more than 30 days after, or more than 1 hour before). No reasons means a reconciliation would link them now. Unsolicited receipts are never legs, only counterparts. Resolve a leg with a correction (`POST {P}/corrections`).",
+      "query": [
+        {
+          "name": "account",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only legs of this account."
+        },
+        {
+          "name": "asset",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only legs of this asset (catalogue id or the unit's name)."
+        },
+        {
+          "name": "nearest",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Counterparts to show beside each leg."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/history": {
+      "summary": "History Rows",
+      "help": "One page of the portfolio's history, one row per economic event: a record alone (`event`), or a withdrawal and a deposit portfolio linked as one `transfer` row with both records (withdrawal first), the link, and the residual (the fee or loss in transit) when both move one asset. Each record carries its account, time, legs, the on-chain `reference`, its unit resource and evidence digests to open at the unit. A transfer leg without a counterpart is `unmatched` (see `GET {P}/unmatched`). A transfer row appears once, where its first record passing the filters falls, so filtering by one account still shows the other account's side.",
+      "query": [
+        {
+          "name": "account",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only rows with a record of this account."
+        },
+        {
+          "name": "asset",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only rows with a record moving this asset (catalogue id or the unit's name)."
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Only rows with a record of one of these event types (repeatable)."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339, inclusive."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339, exclusive."
+        },
+        {
+          "name": "order",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "asc",
+            "desc"
+          ],
+          "required": false,
+          "help": "`desc`: newest first."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/audit": {
+      "summary": "Audit",
+      "help": "The cross-account audit, computed on request from the imported ledger (no unit or provider call): unmatched transfer-like records by account, type and asset; every link's conservation (what the withdrawal sent against what the deposit received, with tolerated differences by asset) and dangling links; the per-account state checks of the translated legs against the units' checkpoints; the units' open source items; and `passed`. It translates the whole ledger, so it takes seconds on a large portfolio.",
+      "query": [
+        {
+          "name": "latest_only",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Check only the latest checkpoint per account."
+        },
+        {
+          "name": "verbose",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Keep passed state checks in the report."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/books": {
+      "summary": "Books",
+      "help": "Queue a books run: translate the ledger, fetch the daily prices it needs from the price provider, validate the engine input, run the accounting engine, audit, and seal the package (records, links, policy, coverage, corrections, prices, engine input and output, audit, and every cited evidence object fetched from its unit) as a new immutable revision (`GET {P}/books`). The result is the books summary with its `revision_id`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A books run already queued or running is returned instead. Needs `sync`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "verified_only"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Verified Only"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/books": {
+      "summary": "Revisions",
+      "help": "One page of the sealed books revisions, newest first: when and by whom each was sealed, in which job, the imports it booked and its file count. `active` marks the newest.",
+      "query": [
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}": {
+      "summary": "Revision",
+      "help": "One sealed revision: its books summary as sealed (records, links, translation, engine completeness and exceptions, realized P&L by account and compartment, flows, pricing, audit) and its package files with their SHA-256.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/export": {
+      "summary": "Export",
+      "help": "The sealed package of a revision as a zip file: every artifact at its package path, each verified against its hash when read. `manifest.json` lists the files with their SHA-256; unzip it and run a replay offline, or `POST …/replay` to replay it here.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/replay": {
+      "summary": "Replay",
+      "help": "Queue a replay of a sealed revision: verify every file of its package against the manifest and the records' evidence closure, check the pinned engine is the installed one, rebuild the engine input from the pinned records, links and policy, and run the engine again. No unit or provider is called. The result says whether the books `matched` and how many files were verified. A replay of the same revision already queued or running is returned instead. Needs `sync`.",
+      "query": [],
+      "body": null,
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/sync": {
+      "summary": "Sync",
+      "help": "Queue a sync of the given accounts, else of every active one (archived accounts never sync): per resource a unit sync (a child job), then the import; a sync already queued or running for the portfolio is returned instead. The job's `accounts` are fixed now (every active account, for a sync of all).",
+      "query": [
+        {
+          "name": "account",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Only these accounts (repeatable); overrides the body."
+        }
+      ],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "accounts"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Accounts"
+          },
+          {
+            "path": [
+              "refresh"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Refresh"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/rebuild": {
+      "summary": "Rebuild",
+      "help": "Queue a rebuild of the whole ledger, a sync job of every active account (`request.rebuild`) that replaces the ledger instead of each account's records: the upgrade step after the units' records move to a new schema generation, which an account-by-account import refuses to mix.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "refresh"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Refresh"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/prices": {
+      "summary": "Fill Prices",
+      "help": "Queue a price job: first the latest USD prices of held assets and the fiat rates (what current valuation reads, as a sync's end refreshes them), then a daily fill of every priced (asset, day) of the ledger and the reporting currency's daily rates from the Terminal API, gaps recorded (`GET {P}/prices/gaps`); a job already queued or running is returned instead. Its result is the fill report with `latest`, the latest refresh's report.",
+      "query": [],
+      "body": null,
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/portfolio/jobs": {
+      "summary": "Jobs",
+      "help": "One page of the tenant's portfolio jobs, newest first, each with its accounts, latest progress message and children. `?portfolio=P&account=a&status=queued,running` finds an account's active sync.",
+      "query": [
+        {
+          "name": "portfolio",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this portfolio."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Only jobs in these statuses: repeatable or comma-separated (`queued,running`)."
+        },
+        {
+          "name": "account",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only jobs covering this account (its `accounts`); requires `portfolio`, as account ids are per portfolio."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/jobs/{job_id}": {
+      "summary": "Job",
+      "help": "One job with its complete progress, its unit child jobs, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/portfolio/jobs/{job_id}/cancel": {
+      "summary": "Cancel",
+      "help": "Cancel a queued or running job and revoke its job token; the worker cancels the unit job it waits for and imports nothing more.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/currencies": {
+      "summary": "Currency Options",
+      "help": "The reporting currencies `policy.functional_currency` accepts, by ISO code: `{id, code, name}` per catalogue fiat currency Terminal serves a daily USD series for (`usd` and `euro` always). `id` is what the policy takes. Terminal is asked at most daily per process; when it cannot answer, every catalogue fiat currency is listed.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/resources/{unit}/{resource_id}/accounts": {
+      "summary": "Resource Account List",
+      "help": "The accounts that read a unit resource, across the tenant's portfolios (only those in the token's `resources` claim, when it has one), by portfolio then account: each with its portfolio, display names, archive time and, for an all-network evm account, the network. Empty when no portfolio uses the resource; the resource itself is its unit's (`GET /v1/<unit>/resources/{r}`).",
+      "query": [
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this deployment serves, in policy 03 contract Rule 19.1's shape: the record types, correction kinds, every public route with the least scope it needs, every problem name, and the catalogue in use. Needs no credential.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    }
+  },
+  "evm": {
+    "GET /v1/evm/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources": {
+      "summary": "Resource List",
+      "help": "The tenant's resources that the credential covers, by name (rule 15).",
+      "query": [
+        {
+          "name": "name",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only the resource with this name."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/evm/resources": {
+      "summary": "Resource Create",
+      "help": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "binding",
+              "network"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "ethereum",
+              "arbitrum",
+              "polygon",
+              "bnb-chain",
+              "base",
+              "avalanche",
+              "optimism",
+              "hyperevm"
+            ],
+            "required": true,
+            "help": "Network"
+          },
+          {
+            "path": [
+              "binding",
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}": {
+      "summary": "Resource Show",
+      "help": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/evm/resources/{resource_id}": {
+      "summary": "Resource Rename",
+      "help": "Rename the resource; its binding and interpretation never change (rule 2.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/evm/resources/{resource_id}": {
+      "summary": "Resource Delete",
+      "help": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/evm/resources/{resource_id}/sync": {
+      "summary": "Start a sync job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "to_height"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "To Height"
+          },
+          {
+            "path": [
+              "full"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Full"
+          },
+          {
+            "path": [
+              "fetch"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Fetch"
+          },
+          {
+            "path": [
+              "verify"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Verify"
+          },
+          {
+            "path": [
+              "accrual_cadence"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "daily",
+              "weekly",
+              "monthly",
+              "none"
+            ],
+            "required": false,
+            "help": "Accrual Cadence"
+          },
+          {
+            "path": [
+              "accrual_at"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Accrual At"
+          },
+          {
+            "path": [
+              "retrace"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Retrace"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/evm/resources/{resource_id}/verification": {
+      "summary": "Start a verify job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "height"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Height"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}/verification": {
+      "summary": "Verification",
+      "help": "The latest verification of the current state (rule 48); `POST` runs a live one as a job.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/jobs": {
+      "summary": "Job List",
+      "help": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
+      "query": [
+        {
+          "name": "resource",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this resource."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/jobs/{job_id}": {
+      "summary": "Job Show",
+      "help": "One job with its complete progress, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/evm/jobs/{job_id}/cancel": {
+      "summary": "Job Cancel",
+      "help": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}/records": {
+      "summary": "Chain Records",
+      "help": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
+      "query": [
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Inclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Exclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Full kind names; repeatable."
+        },
+        {
+          "name": "compartment",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A leg compartment, or any inside it."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "from_height",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "to_height",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "legless",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`false` leaves out records without legs."
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "repeated": true,
+          "choices": [
+            "unsolicited"
+          ],
+          "required": false,
+          "help": "`unsolicited` includes records flagged unsolicited, which are left out otherwise."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}/changes": {
+      "summary": "Changes",
+      "help": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
+      "query": [
+        {
+          "name": "since",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": "The version the caller holds; 0 for everything."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}/state": {
+      "summary": "State",
+      "help": "The latest state, or the state replayed up to `at` (rule 46).",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339 or epoch milliseconds."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}/compartments": {
+      "summary": "Compartments",
+      "help": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}/items": {
+      "summary": "Items",
+      "help": "The open items, by id, pinned to a version (rule 50).",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Item kinds; repeatable."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}/export": {
+      "summary": "Export",
+      "help": "Stream the current state with its evidence closure (rule 12).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/evm/resources/{resource_id}/evidence/{digest}": {
+      "summary": "Evidence",
+      "help": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).",
+      "query": [
+        {
+          "name": "locator",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A record's locator."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/evm/resources/{resource_id}/edits": {
+      "summary": "Edit List",
+      "help": "The active set (applied, not withdrawn), or with `all` every edit, in staging order (rules 7.3.3, 15).",
+      "query": [
+        {
+          "name": "all",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Every edit, not only the active set."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/evm/resources/{resource_id}/edits": {
+      "summary": "Edit Create",
+      "help": "Stage an edit for the resource's next sync (rule 7); a retry with the same `Idempotency-Key` returns the same edit.",
+      "query": [
+        {
+          "name": "apply",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Also start the sync that applies it now (needs `sync`); the edit names it as `job`."
+        }
+      ],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "edit_kind"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "asset_verdict",
+              "own_addresses",
+              "tx_kind"
+            ],
+            "required": false,
+            "help": "Edit Kind"
+          },
+          {
+            "path": [
+              "asset"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Asset"
+          },
+          {
+            "path": [
+              "verdict"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "mine",
+              "spam",
+              "clear"
+            ],
+            "required": false,
+            "help": "Verdict"
+          },
+          {
+            "path": [
+              "note"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Note"
+          },
+          {
+            "path": [
+              "tx"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Tx"
+          },
+          {
+            "path": [
+              "kind"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Kind"
+          },
+          {
+            "path": [
+              "action"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Action"
+          },
+          {
+            "path": [
+              "addresses"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Addresses"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "DELETE /v1/evm/resources/{resource_id}/edits/{edit_id}": {
+      "summary": "Edit Remove",
+      "help": "Discard a pending edit (`200`), or stage an applied edit's withdrawal for the next sync (`202`; with `apply`, start it); a settled edit is returned as it is (rule 7.3).",
+      "query": [
+        {
+          "name": "apply",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Also start the sync that applies it now (needs `sync`); the edit names it as `job`."
+        }
+      ],
+      "body": null,
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/evm/usage": {
+      "summary": "Usage Overview",
+      "help": "The usage of the covered resources by name, one page, and the tenant's own (rule 4.5).",
+      "query": [
+        {
+          "name": "period",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "month",
+            "lifetime"
+          ],
+          "required": false,
+          "help": "The current UTC month, or the resource's whole life."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}/usage": {
+      "summary": "Resource Usage",
+      "help": "What the resource's jobs spent in the period, per meter; no provider call (rule 4.5).",
+      "query": [
+        {
+          "name": "period",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "month",
+            "lifetime"
+          ],
+          "required": false,
+          "help": "The current UTC month, or the resource's whole life."
+        },
+        {
+          "name": "job",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this job."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/resources/{resource_id}/budget": {
+      "summary": "Budget Show",
+      "help": "The resource's budget and its spend in the budget's period (rule 16 row 23).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PUT /v1/evm/resources/{resource_id}/budget": {
+      "summary": "Budget Set",
+      "help": "Set the resource's budget, a hard limit no scope syncs past (policy 02 access rule 7.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "limit_usd"
+            ],
+            "type": "number",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Limit Usd"
+          },
+          {
+            "path": [
+              "period"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "month",
+              "lifetime"
+            ],
+            "required": false,
+            "help": "Period"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/evm/probe": {
+      "summary": "Probe",
+      "help": "What a source is before a resource is created for it; calls are metered on the tenant.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          },
+          {
+            "path": [
+              "networks"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Networks"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/evm/networks": {
+      "summary": "The networks resources may bind",
+      "help": "The providers file's enabled networks in file order, then the contract catalogue's other known ones; no provider call.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/evm/resources/{resource_id}/rediscover": {
+      "summary": "Rediscover a height window",
+      "help": "Ask every discovery feed, the node block scan included, over the window again; ingest, re-derive, verify and commit.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "from_height"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "From Height"
+          },
+          {
+            "path": [
+              "to_height"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "To Height"
+          },
+          {
+            "path": [
+              "accrual_cadence"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "daily",
+              "weekly",
+              "monthly",
+              "none"
+            ],
+            "required": false,
+            "help": "Accrual Cadence"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    }
+  },
+  "hl": {
+    "GET /v1/hl/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources": {
+      "summary": "Resource List",
+      "help": "The tenant's resources that the credential covers, by name (rule 15).",
+      "query": [
+        {
+          "name": "name",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only the resource with this name."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/hl/resources": {
+      "summary": "Resource Create",
+      "help": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "binding",
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}": {
+      "summary": "Resource Show",
+      "help": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/hl/resources/{resource_id}": {
+      "summary": "Resource Rename",
+      "help": "Rename the resource; its binding and interpretation never change (rule 2.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/hl/resources/{resource_id}": {
+      "summary": "Resource Delete",
+      "help": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/hl/resources/{resource_id}/sync": {
+      "summary": "Start a sync job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "fetch"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Fetch"
+          },
+          {
+            "path": [
+              "archive"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Archive"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/hl/resources/{resource_id}/verification": {
+      "summary": "Start a verify job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": []
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}/verification": {
+      "summary": "Verification",
+      "help": "The latest verification of the current state (rule 48); `POST` runs a live one as a job.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/jobs": {
+      "summary": "Job List",
+      "help": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
+      "query": [
+        {
+          "name": "resource",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this resource."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/jobs/{job_id}": {
+      "summary": "Job Show",
+      "help": "One job with its complete progress, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/hl/jobs/{job_id}/cancel": {
+      "summary": "Job Cancel",
+      "help": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}/records": {
+      "summary": "Records",
+      "help": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
+      "query": [
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Inclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Exclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Full kind names; repeatable."
+        },
+        {
+          "name": "compartment",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A leg compartment, or any inside it."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "legless",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`false` leaves out records without legs."
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "repeated": true,
+          "choices": [
+            "unsolicited"
+          ],
+          "required": false,
+          "help": "`unsolicited` includes records flagged unsolicited, which are left out otherwise."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}/changes": {
+      "summary": "Changes",
+      "help": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
+      "query": [
+        {
+          "name": "since",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": "The version the caller holds; 0 for everything."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}/state": {
+      "summary": "State",
+      "help": "The latest state, or the state replayed up to `at` (rule 46).",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339 or epoch milliseconds."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}/compartments": {
+      "summary": "Compartments",
+      "help": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}/items": {
+      "summary": "Items",
+      "help": "The open items, by id, pinned to a version (rule 50).",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Item kinds; repeatable."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}/export": {
+      "summary": "Export",
+      "help": "Stream the current state with its evidence closure (rule 12).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/hl/resources/{resource_id}/evidence/{digest}": {
+      "summary": "Evidence",
+      "help": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).",
+      "query": [
+        {
+          "name": "locator",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A record's locator."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/hl/usage": {
+      "summary": "Usage Overview",
+      "help": "The usage of the covered resources by name, one page, and the tenant's own (rule 4.5).",
+      "query": [
+        {
+          "name": "period",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "month",
+            "lifetime"
+          ],
+          "required": false,
+          "help": "The current UTC month, or the resource's whole life."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}/usage": {
+      "summary": "Resource Usage",
+      "help": "What the resource's jobs spent in the period, per meter; no provider call (rule 4.5).",
+      "query": [
+        {
+          "name": "period",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "month",
+            "lifetime"
+          ],
+          "required": false,
+          "help": "The current UTC month, or the resource's whole life."
+        },
+        {
+          "name": "job",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this job."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/hl/resources/{resource_id}/budget": {
+      "summary": "Budget Show",
+      "help": "The resource's budget and its spend in the budget's period (rule 16 row 23).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PUT /v1/hl/resources/{resource_id}/budget": {
+      "summary": "Budget Set",
+      "help": "Set the resource's budget, a hard limit no scope syncs past (policy 02 access rule 7.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "limit_usd"
+            ],
+            "type": "number",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Limit Usd"
+          },
+          {
+            "path": [
+              "period"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "month",
+              "lifetime"
+            ],
+            "required": false,
+            "help": "Period"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/hl/probe": {
+      "summary": "Probe",
+      "help": "What a source is before a resource is created for it; calls are metered on the tenant.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    }
+  },
+  "dydx": {
+    "GET /v1/dydx/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/resources": {
+      "summary": "Resource List",
+      "help": "The tenant's resources that the credential covers, by name (rule 15).",
+      "query": [
+        {
+          "name": "name",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only the resource with this name."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/dydx/resources": {
+      "summary": "Resource Create",
+      "help": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "binding",
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/resources/{resource_id}": {
+      "summary": "Resource Show",
+      "help": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/dydx/resources/{resource_id}": {
+      "summary": "Resource Rename",
+      "help": "Rename the resource; its binding and interpretation never change (rule 2.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/dydx/resources/{resource_id}": {
+      "summary": "Resource Delete",
+      "help": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/dydx/resources/{resource_id}/sync": {
+      "summary": "Start a sync job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "from_height"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "From Height"
+          },
+          {
+            "path": [
+              "to_height"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "To Height"
+          },
+          {
+            "path": [
+              "verify_at"
+            ],
+            "type": "integer",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Verify At"
+          },
+          {
+            "path": [
+              "no_fetch"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "No Fetch"
+          },
+          {
+            "path": [
+              "no_bank"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "No Bank"
+          },
+          {
+            "path": [
+              "no_bisect"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "No Bisect"
+          },
+          {
+            "path": [
+              "offline"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Offline"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/dydx/resources/{resource_id}/verification": {
+      "summary": "Start a verify job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "height"
+            ],
+            "type": "integer",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Height"
+          },
+          {
+            "path": [
+              "all"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "All"
+          },
+          {
+            "path": [
+              "no_bank"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "No Bank"
+          },
+          {
+            "path": [
+              "offline"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Offline"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/dydx/resources/{resource_id}/verification": {
+      "summary": "Verification",
+      "help": "The latest verification of the current state (rule 48); `POST` runs a live one as a job.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/jobs": {
+      "summary": "Job List",
+      "help": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
+      "query": [
+        {
+          "name": "resource",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this resource."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/jobs/{job_id}": {
+      "summary": "Job Show",
+      "help": "One job with its complete progress, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/dydx/jobs/{job_id}/cancel": {
+      "summary": "Job Cancel",
+      "help": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/resources/{resource_id}/records": {
+      "summary": "Chain Records",
+      "help": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
+      "query": [
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Inclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Exclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Full kind names; repeatable."
+        },
+        {
+          "name": "compartment",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A leg compartment, or any inside it."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "from_height",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "to_height",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "legless",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`false` leaves out records without legs."
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "repeated": true,
+          "choices": [
+            "unsolicited"
+          ],
+          "required": false,
+          "help": "`unsolicited` includes records flagged unsolicited, which are left out otherwise."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/resources/{resource_id}/changes": {
+      "summary": "Changes",
+      "help": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
+      "query": [
+        {
+          "name": "since",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": "The version the caller holds; 0 for everything."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/resources/{resource_id}/state": {
+      "summary": "State",
+      "help": "The latest state, or the state replayed up to `at` (rule 46).",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339 or epoch milliseconds."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/resources/{resource_id}/compartments": {
+      "summary": "Compartments",
+      "help": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/resources/{resource_id}/items": {
+      "summary": "Items",
+      "help": "The open items, by id, pinned to a version (rule 50).",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Item kinds; repeatable."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/dydx/resources/{resource_id}/export": {
+      "summary": "Export",
+      "help": "Stream the current state with its evidence closure (rule 12).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/dydx/resources/{resource_id}/evidence/{digest}": {
+      "summary": "Evidence",
+      "help": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).",
+      "query": [
+        {
+          "name": "locator",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A record's locator."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "POST /v1/dydx/probe": {
+      "summary": "Probe",
+      "help": "What a source is before a resource is created for it; calls are metered on the tenant.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    }
+  },
+  "cex": {
+    "GET /v1/cex/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/resources": {
+      "summary": "Resource List",
+      "help": "The tenant's resources that the credential covers, by name (rule 15).",
+      "query": [
+        {
+          "name": "name",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only the resource with this name."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/cex/resources": {
+      "summary": "Resource Create",
+      "help": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "binding",
+              "venue"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Venue"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}": {
+      "summary": "Resource Show",
+      "help": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/cex/resources/{resource_id}": {
+      "summary": "Resource Rename",
+      "help": "Rename the resource; its binding and interpretation never change (rule 2.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/cex/resources/{resource_id}": {
+      "summary": "Resource Delete",
+      "help": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/cex/resources/{resource_id}/sync": {
+      "summary": "Start a sync job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "no_fetch"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "No Fetch"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/cex/resources/{resource_id}/verification": {
+      "summary": "Start a verify job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": []
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}/verification": {
+      "summary": "Verification",
+      "help": "The latest verification of the current state (rule 48); `POST` runs a live one as a job.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/jobs": {
+      "summary": "Job List",
+      "help": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
+      "query": [
+        {
+          "name": "resource",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this resource."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/jobs/{job_id}": {
+      "summary": "Job Show",
+      "help": "One job with its complete progress, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/cex/jobs/{job_id}/cancel": {
+      "summary": "Job Cancel",
+      "help": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}/records": {
+      "summary": "Records",
+      "help": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
+      "query": [
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Inclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Exclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Full kind names; repeatable."
+        },
+        {
+          "name": "compartment",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A leg compartment, or any inside it."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "legless",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`false` leaves out records without legs."
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "repeated": true,
+          "choices": [
+            "unsolicited"
+          ],
+          "required": false,
+          "help": "`unsolicited` includes records flagged unsolicited, which are left out otherwise."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}/changes": {
+      "summary": "Changes",
+      "help": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
+      "query": [
+        {
+          "name": "since",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": "The version the caller holds; 0 for everything."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}/state": {
+      "summary": "State",
+      "help": "The latest state, or the state replayed up to `at` (rule 46).",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339 or epoch milliseconds."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}/compartments": {
+      "summary": "Compartments",
+      "help": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}/items": {
+      "summary": "Items",
+      "help": "The open items, by id, pinned to a version (rule 50).",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Item kinds; repeatable."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}/export": {
+      "summary": "Export",
+      "help": "Stream the current state with its evidence closure (rule 12).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/cex/resources/{resource_id}/evidence/{digest}": {
+      "summary": "Evidence",
+      "help": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).",
+      "query": [
+        {
+          "name": "locator",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A record's locator."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/cex/resources/{resource_id}/edits": {
+      "summary": "Edit List",
+      "help": "The active set (applied, not withdrawn), or with `all` every edit, in staging order (rules 7.3.3, 15).",
+      "query": [
+        {
+          "name": "all",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Every edit, not only the active set."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/cex/resources/{resource_id}/edits": {
+      "summary": "Edit Create",
+      "help": "Stage an edit for the resource's next sync (rule 7); a retry with the same `Idempotency-Key` returns the same edit.",
+      "query": [
+        {
+          "name": "apply",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Also start the sync that applies it now (needs `sync`); the edit names it as `job`."
+        }
+      ],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "kind"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "add_evidence",
+              "add_spec",
+              "create_observation",
+              "merge_observations",
+              "opaque_compartment",
+              "patch_observation",
+              "skip_observations",
+              "skip_record",
+              "skip_source",
+              "snapshot"
+            ],
+            "required": false,
+            "help": "Kind"
+          },
+          {
+            "path": [
+              "digest"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Digest"
+          },
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "parser"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Parser"
+          },
+          {
+            "path": [
+              "confirm"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Confirm"
+          },
+          {
+            "path": [
+              "supersedes"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Supersedes"
+          },
+          {
+            "path": [
+              "reason"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Reason"
+          },
+          {
+            "path": [
+              "author"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Author"
+          },
+          {
+            "path": [
+              "agent",
+              "key"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Key"
+          },
+          {
+            "path": [
+              "agent",
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "source"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Source"
+          },
+          {
+            "path": [
+              "record"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Record"
+          },
+          {
+            "path": [
+              "observations"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Observations"
+          },
+          {
+            "path": [
+              "observation"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Observation"
+          },
+          {
+            "path": [
+              "delete"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Delete"
+          },
+          {
+            "path": [
+              "id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Id"
+          },
+          {
+            "path": [
+              "observation",
+              "id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Id"
+          },
+          {
+            "path": [
+              "observation",
+              "time"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Time"
+          },
+          {
+            "path": [
+              "observation",
+              "subaccount"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Subaccount"
+          },
+          {
+            "path": [
+              "observation",
+              "type"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "bonus",
+              "borrow",
+              "conversion",
+              "crypto_deposit",
+              "crypto_withdrawal",
+              "fee",
+              "fiat_conversion",
+              "fiat_deposit",
+              "fiat_withdrawal",
+              "funding",
+              "future_order",
+              "future_position_summary",
+              "future_trade",
+              "interest",
+              "internal_transfer",
+              "realized_pnl",
+              "repay",
+              "spot_order",
+              "spot_trade",
+              "trade_leg",
+              "transfer",
+              "unknown",
+              "yield"
+            ],
+            "required": false,
+            "help": "Type"
+          },
+          {
+            "path": [
+              "observation",
+              "base"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Base"
+          },
+          {
+            "path": [
+              "observation",
+              "quote"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Quote"
+          },
+          {
+            "path": [
+              "observation",
+              "pair"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Pair"
+          },
+          {
+            "path": [
+              "observation",
+              "order_id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Order Id"
+          },
+          {
+            "path": [
+              "observation",
+              "instrument"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Instrument"
+          },
+          {
+            "path": [
+              "observation",
+              "settle"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Settle"
+          },
+          {
+            "path": [
+              "observation",
+              "position_id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Position Id"
+          },
+          {
+            "path": [
+              "observation",
+              "size"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Size"
+          },
+          {
+            "path": [
+              "observation",
+              "price"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Price"
+          },
+          {
+            "path": [
+              "observation",
+              "side"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "buy",
+              "sell"
+            ],
+            "required": false,
+            "help": "Side"
+          },
+          {
+            "path": [
+              "observation",
+              "status"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "cancelled",
+              "filled",
+              "partially_filled"
+            ],
+            "required": false,
+            "help": "Status"
+          },
+          {
+            "path": [
+              "observation",
+              "position_side"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "long",
+              "short"
+            ],
+            "required": false,
+            "help": "Position Side"
+          },
+          {
+            "path": [
+              "observation",
+              "margin_mode"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Margin Mode"
+          },
+          {
+            "path": [
+              "observation",
+              "opened_at"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Opened At"
+          },
+          {
+            "path": [
+              "observation",
+              "closed_at"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Closed At"
+          },
+          {
+            "path": [
+              "observation",
+              "asset"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Asset"
+          },
+          {
+            "path": [
+              "observation",
+              "amount"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Amount"
+          },
+          {
+            "path": [
+              "observation",
+              "trade_id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Trade Id"
+          },
+          {
+            "path": [
+              "observation",
+              "event_type"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "bonus",
+              "borrow",
+              "conversion",
+              "crypto_deposit",
+              "crypto_withdrawal",
+              "fee",
+              "fiat_conversion",
+              "fiat_deposit",
+              "fiat_withdrawal",
+              "funding",
+              "future_order",
+              "future_position_summary",
+              "future_trade",
+              "interest",
+              "internal_transfer",
+              "realized_pnl",
+              "repay",
+              "spot_order",
+              "spot_trade",
+              "trade_leg",
+              "transfer",
+              "unknown",
+              "yield"
+            ],
+            "required": false,
+            "help": "Event Type"
+          },
+          {
+            "path": [
+              "observation",
+              "label"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Label"
+          },
+          {
+            "path": [
+              "observation",
+              "event_id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Event Id"
+          },
+          {
+            "path": [
+              "observation",
+              "category"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Category"
+          },
+          {
+            "path": [
+              "observation",
+              "src_account"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Src Account"
+          },
+          {
+            "path": [
+              "observation",
+              "dst_account"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Dst Account"
+          },
+          {
+            "path": [
+              "observation",
+              "network"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Network"
+          },
+          {
+            "path": [
+              "observation",
+              "tx_id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Tx Id"
+          },
+          {
+            "path": [
+              "observation",
+              "src_address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Src Address"
+          },
+          {
+            "path": [
+              "observation",
+              "dst_address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Dst Address"
+          },
+          {
+            "path": [
+              "observation",
+              "fiat_asset"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Fiat Asset"
+          },
+          {
+            "path": [
+              "observation",
+              "fiat_amount"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Fiat Amount"
+          },
+          {
+            "path": [
+              "observation",
+              "payment_method"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Payment Method"
+          },
+          {
+            "path": [
+              "time"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Time"
+          },
+          {
+            "path": [
+              "evidence"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Evidence"
+          },
+          {
+            "path": [
+              "compartment"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Compartment"
+          },
+          {
+            "path": [
+              "venue_file"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Venue File"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "DELETE /v1/cex/resources/{resource_id}/edits/{edit_id}": {
+      "summary": "Edit Remove",
+      "help": "Discard a pending edit (`200`), or stage an applied edit's withdrawal for the next sync (`202`; with `apply`, start it); a settled edit is returned as it is (rule 7.3).",
+      "query": [
+        {
+          "name": "apply",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Also start the sync that applies it now (needs `sync`); the edit names it as `job`."
+        }
+      ],
+      "body": null,
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}/credentials": {
+      "summary": "Credentials Status",
+      "help": "Whether the resource has stored credentials: fingerprint, when added, last use and last error.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PUT /v1/cex/resources/{resource_id}/credentials": {
+      "summary": "Credentials Put",
+      "help": "Test the credentials with one provider call, then seal and store them, replacing any (policy 02 access rule 15.3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "api_key"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Api Key"
+          },
+          {
+            "path": [
+              "api_secret"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Api Secret"
+          },
+          {
+            "path": [
+              "api_passphrase"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Api Passphrase"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/cex/resources/{resource_id}/credentials": {
+      "summary": "Credentials Delete",
+      "help": "Remove the stored credentials (idempotent).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/cex/resources/{resource_id}/credentials/test": {
+      "summary": "Credentials Test",
+      "help": "One provider call with the credentials sent; nothing is stored or retained.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "api_key"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Api Key"
+          },
+          {
+            "path": [
+              "api_secret"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Api Secret"
+          },
+          {
+            "path": [
+              "api_passphrase"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Api Passphrase"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/cex/resources/{resource_id}/uploads": {
+      "summary": "Upload",
+      "help": "Store evidence files and detect them; `add_evidence` with a file's `digest` attaches it (contract rule 9).",
+      "query": [],
+      "body": {
+        "media": "multipart/form-data",
+        "required": true,
+        "fields": []
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/resources/{resource_id}/coverage": {
+      "summary": "Coverage Map",
+      "help": "For each export type of the venue: files, periods covered (the state and files waiting for a sync) and gaps.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/cex/venues": {
+      "summary": "Venue List",
+      "help": "Every venue with an onboarding guide: name, credential fields (or `null` for exports only), guidance and export types.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/cex/resources/{resource_id}/edits/preview": {
+      "summary": "Dry-run an edit",
+      "help": "Start the unit's dry run of edits; its result is what would change, and it commits nothing.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "add",
+              "reason"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Reason"
+          },
+          {
+            "path": [
+              "add",
+              "author"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Author"
+          },
+          {
+            "path": [
+              "add",
+              "kind"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "add_spec",
+              "create_observation",
+              "merge_observations",
+              "opaque_compartment",
+              "patch_observation",
+              "skip_observations",
+              "skip_record",
+              "skip_source",
+              "snapshot"
+            ],
+            "required": true,
+            "help": "Kind"
+          },
+          {
+            "path": [
+              "add",
+              "source"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Source"
+          },
+          {
+            "path": [
+              "add",
+              "record"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Record"
+          },
+          {
+            "path": [
+              "add",
+              "observations"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": true,
+            "help": "Observations"
+          },
+          {
+            "path": [
+              "add",
+              "observation"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Observation"
+          },
+          {
+            "path": [
+              "add",
+              "delete"
+            ],
+            "type": "string",
+            "repeated": true,
+            "choices": [],
+            "required": false,
+            "help": "Delete"
+          },
+          {
+            "path": [
+              "add",
+              "id"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Id"
+          },
+          {
+            "path": [
+              "add",
+              "time"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Time"
+          },
+          {
+            "path": [
+              "add",
+              "evidence"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Evidence"
+          },
+          {
+            "path": [
+              "add",
+              "compartment"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Compartment"
+          },
+          {
+            "path": [
+              "add",
+              "venue_file"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Venue File"
+          },
+          {
+            "path": [
+              "withdraw"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Withdraw"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    }
+  }
+}

@@ -6,11 +6,12 @@ import sys
 
 
 def main():
-  """Check structure, formatting, lint, and types without modifying source files."""
+  """Check structure, the route index, formatting, lint, and types without modifying source files."""
   root = Path(__file__).resolve().parents[1]
   paths = ['pkg/src', 'pkg/tests']
   for arguments in (
     [str(root / 'scripts/structure.py')],
+    [str(root / 'scripts/openapi.py'), 'index', '--check'],
     ['-m', 'ruff', 'check', *paths],
     ['-m', 'ruff', 'format', '--check', *paths],
     ['-m', 'pyright', '--pythonpath', sys.executable],

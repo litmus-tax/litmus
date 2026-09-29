@@ -24,7 +24,7 @@ litmus = "litmus.client.cli.app:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"litmus.client" = ["py.typed"]
+"litmus.client" = ["py.typed", "cli/routes.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
