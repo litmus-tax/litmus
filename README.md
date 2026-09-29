@@ -12,6 +12,40 @@ litmus auth login                   # device flow: approve the code in the app
 litmus auth status
 ```
 
+## Commands
+
+Every command calls one public route ([Rule 7.10][rule7]); `litmus <group> --help` lists
+them, with help and options taken from the services' OpenAPI documents.
+
+```sh
+litmus evm resource list
+litmus evm state treasury-ethereum --at 2026-01-01   # a resource by name or id
+litmus cex records bitget --from 2026-01-01 --kind cex.trade --all
+litmus overview --portfolio company                  # portfolio verbs at the root
+litmus jobs watch <job> --service evm                # progress on stderr
+litmus books export <revision> --output books.zip
+```
+
+Unit commands take `<unit> …` (`evm`, `hl`, `dydx`, `cex`) and exist where the unit
+serves the route. Portfolio commands take `--portfolio`, else `LITMUS_PORTFOLIO`, else
+the one `[portfolios.<id>]` of `litmus.toml`, else the tenant's only portfolio. Flags are
+the route's query parameters; `--all` follows `next_cursor` (`--all-pages` on `edits
+list`, whose own `all` parameter shows withdrawn edits: specs#60).
+
+## OpenAPI snapshots
+
+`openapi/<service>.json` are committed snapshots of the services' documents, and
+`pkg/src/litmus/client/cli/routes.json` is generated from them. After a service changes
+its routes, refresh both from a running deployment and commit them:
+
+```sh
+python scripts/openapi.py fetch --url http://localhost:8080   # --check only reports drift
+python scripts/openapi.py index
+```
+
+`scripts/check.py` fails when the index is stale, and `pkg/tests/test_coverage.py` fails
+when a served route has no command or a command has no route.
+
 ## Connection
 
 Commands go to `--url`, else `LITMUS_URL`, else `[connection] url` of the nearest
