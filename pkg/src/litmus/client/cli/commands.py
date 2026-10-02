@@ -175,6 +175,15 @@ PORTFOLIO = [
   Command(('corrections', 'add'), 'POST', f'{P}/corrections'),
   Command(('corrections', 'withdraw'), 'DELETE', f'{P}/corrections/{{correction_id}}'),
   Command(('corrections', 'candidates'), 'GET', f'{P}/corrections/candidates'),
+  Command(('counterparties', 'list'), 'GET', f'{P}/counterparties'),
+  Command(('counterparties', 'add'), 'POST', f'{P}/counterparties'),
+  Command(('counterparties', 'show'), 'GET', f'{P}/counterparties/{{counterparty_id}}'),
+  Command(
+    ('counterparties', 'edit'), 'PATCH', f'{P}/counterparties/{{counterparty_id}}'
+  ),
+  Command(
+    ('counterparties', 'delete'), 'DELETE', f'{P}/counterparties/{{counterparty_id}}'
+  ),
   Command(('audit',), 'GET', f'{P}/audit'),
   Command(('books', 'build'), 'POST', f'{P}/books'),
   Command(('books', 'list'), 'GET', f'{P}/books'),

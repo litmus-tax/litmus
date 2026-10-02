@@ -1725,7 +1725,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/corrections": {
       "summary": "Corrections",
-      "help": "One page of the portfolio's corrections in application order, each with who recorded it and when, whether it was withdrawn (by whom, when) and the links it owns.",
+      "help": "One page of the portfolio's corrections in force in application order, each with who recorded it, when, in which job, the AI-made mark when an agent's API key made it, and the links it owns. A withdrawn correction is not kept (policy 05 sub-ledger Rule 3.7).",
       "query": [
         {
           "name": "withdrawn",
@@ -1733,7 +1733,7 @@
           "repeated": false,
           "choices": [],
           "required": false,
-          "help": "Only withdrawn (true) or only active (false) ones."
+          "help": "`true` lists none: a withdrawn correction is deleted, with no history (policy 01 portfolio Rule 7.3); `false` or absent lists those in force."
         },
         {
           "name": "cursor",
@@ -1758,7 +1758,7 @@
     },
     "POST /v1/portfolio/portfolios/{portfolio_id}/corrections": {
       "summary": "Correction New",
-      "help": "Queue a correction job that applies the correction, recorded with the token's subject, the time and the job, or previews it (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}`, whose `result` is the `CorrectionResult`. `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` takes a transfer out of the unmatched ones as an external movement, which books book at market value, or at carried cost when the owner retains the asset (an inbound retained transfer needs `acquisition_price` and `acquisition_time`, else 422; policy 05 rule 13.3). The result's `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. The records are checked before the job is queued, and again by the job: they must be unlinked, unclassified transfers (404 `record-not-found`, 409 `correction-conflict`, 422 otherwise). An identical request of the same user joins the job already queued or running.",
+      "help": "Queue a correction job that applies the correction, recorded with the token's subject, the time and the job, or previews it (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}`, whose `result` is the `CorrectionResult`. `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` tags an unlinked transfer as a boundary transfer with the counterparty on the other side (policy 05 sub-ledger Rule 3.3): an id from `GET {P}/counterparties`, or `{label, mine, note?, reference?}`, created in the same job; `replaces` withdraws that tag of the same record in the same job. Its counterparty's flag decides the booking (Rule 2): someone else, at market value both ways; mine, out at cost and in at market value as the new cost; never income or expense. `ownership_retained` is derived from the flag, and one that disagrees is a 422. The correction records the token's subject, the job and, for an agent's API key, the AI-made mark. The result's `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. The records are checked before the job is queued, and again by the job: they must be unlinked, unclassified transfers (404 `record-not-found` or `counterparty-not-found`, 409 `correction-conflict`, 422 otherwise). An identical request of the same user joins the job already queued or running.",
       "query": [
         {
           "name": "dry_run",
@@ -1838,6 +1838,80 @@
           },
           {
             "path": [
+              "counterparty"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Counterparty"
+          },
+          {
+            "path": [
+              "counterparty",
+              "label"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Label"
+          },
+          {
+            "path": [
+              "counterparty",
+              "mine"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Mine"
+          },
+          {
+            "path": [
+              "counterparty",
+              "note"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Note"
+          },
+          {
+            "path": [
+              "counterparty",
+              "reference"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Reference"
+          },
+          {
+            "path": [
+              "reference"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Reference"
+          },
+          {
+            "path": [
+              "replaces"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Replaces"
+          },
+          {
+            "path": [
               "ownership_retained"
             ],
             "type": "boolean",
@@ -1845,16 +1919,6 @@
             "choices": [],
             "required": false,
             "help": "Ownership Retained"
-          },
-          {
-            "path": [
-              "acquisition_time"
-            ],
-            "type": "string",
-            "repeated": false,
-            "choices": [],
-            "required": false,
-            "help": "Acquisition Time"
           }
         ]
       },
@@ -1904,7 +1968,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/corrections/{correction_id}": {
       "summary": "Correction",
-      "help": "One correction, withdrawn or not.",
+      "help": "One correction in force; 404 once withdrawn.",
       "query": [],
       "body": null,
       "job": false,
@@ -1912,7 +1976,7 @@
     },
     "DELETE /v1/portfolio/portfolios/{portfolio_id}/corrections/{correction_id}": {
       "summary": "Correction Withdraw",
-      "help": "Queue a correction job that withdraws a correction as the token's subject (it stays listed with `withdrawn_at`/`withdrawn_by`/`withdrawn_job` and applies no more; a merge's link is deleted), or previews that (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}` for the `CorrectionResult` with the same `effect`. 404 `correction-not-found`, and 409 `correction-conflict` when already withdrawn, before anything is queued.",
+      "help": "Queue a correction job that withdraws a correction: it is deleted with the links it owns, and no record of it, or of who withdrew it, is kept (policy 01 portfolio Rule 7.3); or previews that (`?dry_run=true`, which needs only `read`). Poll `GET /jobs/{id}` for the `CorrectionResult` (the correction as it was) with its `effect`. 404 `correction-not-found` when no such correction is in force, before anything is queued.",
       "query": [
         {
           "name": "dry_run",
@@ -1921,6 +1985,145 @@
           "choices": [],
           "required": false,
           "help": "Preview only: the effect of applying it, from a scratch derivation; nothing is written."
+        }
+      ],
+      "body": null,
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/counterparties": {
+      "summary": "Counterparties",
+      "help": "The portfolio's counterparties by label, each with the transfers it tags (`tags`) and what they moved per asset, in minus out (`quantities`). A counterparty is custom, current state only, and never identified by address (Rule 3.1).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/counterparties": {
+      "summary": "Counterparty New",
+      "help": "Create a counterparty `{label, mine, note?, reference?}`: `mine` when the asset stays the owner's in an account Litmus does not track yet, else someone else (Rule 3.1). Its `id` is a slug of the label (`Marcel (loan)` → `marcel-loan`), fixed once created; it records who created it. A tag can also create one (`POST {P}/corrections`).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "label"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Label"
+          },
+          {
+            "path": [
+              "mine"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Mine"
+          },
+          {
+            "path": [
+              "note"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Note"
+          },
+          {
+            "path": [
+              "reference"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Reference"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/counterparties/{counterparty_id}": {
+      "summary": "Counterparty",
+      "help": "One counterparty with the transfers it tags; 404 `counterparty-not-found`.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/portfolio/portfolios/{portfolio_id}/counterparties/{counterparty_id}": {
+      "summary": "Counterparty Patch",
+      "help": "Change `label`, `mine`, `note` or `reference` in place, with no version kept (Rule 3.1.5). A flag change rebooks every transfer it tags (Rule 3.2): their tags follow it, and when it tags any, a derive job is queued (`derive_job`); reads serve the previous items until it finishes.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "label"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Label"
+          },
+          {
+            "path": [
+              "mine"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Mine"
+          },
+          {
+            "path": [
+              "note"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Note"
+          },
+          {
+            "path": [
+              "reference"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Reference"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/portfolio/portfolios/{portfolio_id}/counterparties/{counterparty_id}": {
+      "summary": "Counterparty Delete",
+      "help": "Queue a correction job that deletes the counterparty and withdraws every tag that names it, so those transfers are untagged again (Rule 3.1.6); nothing of it is kept (Rule 3.7). With `?dry_run=true` (which needs only `read`) the job lists the tags it would withdraw and their effect, and writes nothing. Poll `GET /jobs/{id}`: its `result` is `{dry_run, counterparty, withdrawn, effect}`. 404 `counterparty-not-found` before anything is queued.",
+      "query": [
+        {
+          "name": "dry_run",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Preview only: list the tags it would withdraw and their effect; nothing is written."
         }
       ],
       "body": null,
