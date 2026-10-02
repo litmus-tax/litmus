@@ -775,6 +775,22 @@
           {
             "path": [
               "policy",
+              "perp_cost_method"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "average",
+              "fifo",
+              "lifo",
+              "hifo"
+            ],
+            "required": false,
+            "help": "Perp Cost Method"
+          },
+          {
+            "path": [
+              "policy",
               "lot_scope"
             ],
             "type": "string",
@@ -878,20 +894,6 @@
           {
             "path": [
               "policy",
-              "loan_interest"
-            ],
-            "type": "string",
-            "repeated": false,
-            "choices": [
-              "accrued",
-              "paid"
-            ],
-            "required": false,
-            "help": "Loan Interest"
-          },
-          {
-            "path": [
-              "policy",
               "audit_value_allowance"
             ],
             "type": "string",
@@ -951,10 +953,22 @@
             "repeated": false,
             "choices": [
               "ignore",
-              "income"
+              "income",
+              "zero_cost"
             ],
             "required": false,
             "help": "Unsolicited"
+          },
+          {
+            "path": [
+              "policy",
+              "unsolicited_dust"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Unsolicited Dust"
           },
           {
             "path": [
@@ -1088,20 +1102,6 @@
           },
           {
             "path": [
-              "margin_model"
-            ],
-            "type": "string",
-            "repeated": false,
-            "choices": [
-              "none",
-              "notional",
-              "pnl_settled"
-            ],
-            "required": false,
-            "help": "Margin Model"
-          },
-          {
-            "path": [
               "unit"
             ],
             "type": "string",
@@ -1112,7 +1112,8 @@
               "dydx",
               "evm",
               "hl",
-              "lighter"
+              "lighter",
+              "noble"
             ],
             "required": false,
             "help": "Unit"
@@ -1143,11 +1144,7 @@
             ],
             "type": "string",
             "repeated": false,
-            "choices": [
-              "bitget",
-              "mexc",
-              "bit2me"
-            ],
+            "choices": [],
             "required": false,
             "help": "Venue"
           }
@@ -1166,7 +1163,7 @@
     },
     "PATCH /v1/portfolio/portfolios/{portfolio_id}/accounts/{account}": {
       "summary": "Account Patch",
-      "help": "Rename (`label`), archive or restore (`archived`), or change the margin model (re-checking its resources); the id never changes. Archiving, restoring or a margin model change queues a derive job (`derive_job`); reads serve the previous holdings and items until it finishes.",
+      "help": "Rename (`label`), archive or restore (`archived`); the id never changes. Archiving or restoring queues a derive job (`derive_job`); reads serve the previous holdings and items until it finishes.",
       "query": [],
       "body": {
         "media": "application/json",
@@ -1191,20 +1188,6 @@
             "choices": [],
             "required": false,
             "help": "Archived"
-          },
-          {
-            "path": [
-              "margin_model"
-            ],
-            "type": "string",
-            "repeated": false,
-            "choices": [
-              "notional",
-              "pnl_settled",
-              "none"
-            ],
-            "required": false,
-            "help": "Margin Model"
           }
         ]
       },
@@ -1324,6 +1307,22 @@
           {
             "path": [
               "policy",
+              "perp_cost_method"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "average",
+              "fifo",
+              "lifo",
+              "hifo"
+            ],
+            "required": false,
+            "help": "Perp Cost Method"
+          },
+          {
+            "path": [
+              "policy",
               "lot_scope"
             ],
             "type": "string",
@@ -1427,20 +1426,6 @@
           {
             "path": [
               "policy",
-              "loan_interest"
-            ],
-            "type": "string",
-            "repeated": false,
-            "choices": [
-              "accrued",
-              "paid"
-            ],
-            "required": false,
-            "help": "Loan Interest"
-          },
-          {
-            "path": [
-              "policy",
               "audit_value_allowance"
             ],
             "type": "string",
@@ -1500,10 +1485,22 @@
             "repeated": false,
             "choices": [
               "ignore",
-              "income"
+              "income",
+              "zero_cost"
             ],
             "required": false,
             "help": "Unsolicited"
+          },
+          {
+            "path": [
+              "policy",
+              "unsolicited_dust"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Unsolicited Dust"
           },
           {
             "path": [
@@ -1761,7 +1758,7 @@
     },
     "POST /v1/portfolio/portfolios/{portfolio_id}/corrections": {
       "summary": "Correction New",
-      "help": "Queue a correction job that applies the correction, recorded with the token's subject, the time and the job, or previews it (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}`, whose `result` is the `CorrectionResult`. `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` takes a transfer out of the unmatched ones as an external movement. The result's `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. The records are checked before the job is queued, and again by the job: they must be unlinked, unclassified transfers (404 `record-not-found`, 409 `correction-conflict`, 422 otherwise). An identical request of the same user joins the job already queued or running.",
+      "help": "Queue a correction job that applies the correction, recorded with the token's subject, the time and the job, or previews it (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}`, whose `result` is the `CorrectionResult`. `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` takes a transfer out of the unmatched ones as an external movement, which books book at market value, or at carried cost when the owner retains the asset (an inbound retained transfer needs `acquisition_price` and `acquisition_time`, else 422; policy 05 rule 13.3). The result's `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. The records are checked before the job is queued, and again by the job: they must be unlinked, unclassified transfers (404 `record-not-found`, 409 `correction-conflict`, 422 otherwise). An identical request of the same user joins the job already queued or running.",
       "query": [
         {
           "name": "dry_run",
@@ -1848,6 +1845,16 @@
             "choices": [],
             "required": false,
             "help": "Ownership Retained"
+          },
+          {
+            "path": [
+              "acquisition_time"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Acquisition Time"
           }
         ]
       },
@@ -1996,7 +2003,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/unmatched": {
       "summary": "Unmatched Legs",
-      "help": "One page of the unmatched transfer legs (the records `unmatched_transfer` items count), oldest first, each beside its `nearest` counterparts: unlinked transfer-like records of the opposite direction in any account, fewest reasons first, then nearest in time, each with why it did not link at the loosest rung of reconciliation (`same_account`, `type`, `unresolved_asset`, `asset`, `network`, `tx_id`, `amount`: above what was sent or more than 5% below it, `window`: more than 30 days after, or more than 1 hour before). No reasons means a reconciliation would link them now. Unsolicited receipts are never legs, only counterparts. Resolve a leg with a correction (`POST {P}/corrections`).",
+      "help": "One page of the unmatched transfer legs (the records `unmatched_transfer` items count), oldest first, each beside its `nearest` counterparts: unlinked transfer-like records of the same asset and the opposite direction in any account, fewest reasons first, then nearest in time, each with why it did not link at the loosest rung of reconciliation (`same_resource`: both from one resource, such as one network of an evm account; `type`, `unresolved_asset`, `network`, `tx_id`, `amount`: above what was sent or more than 5% below it, `window`: more than 30 days after, or more than 1 hour before; `ambiguous`: every rule accepts the pair, but other candidates competed, so reconciliation left both). No reasons means a reconciliation would link them now (records synced since the last one). Unsolicited receipts are never legs, only counterparts. Resolve a leg with a correction (`POST {P}/corrections`).",
       "query": [
         {
           "name": "account",
@@ -2146,7 +2153,7 @@
     },
     "POST /v1/portfolio/portfolios/{portfolio_id}/books": {
       "summary": "Books",
-      "help": "Queue a books run: translate the ledger, fetch the daily prices it needs from the price provider, validate the engine input, run the accounting engine, audit, and seal the package (records, links, policy, coverage, corrections, prices, engine input and output, audit, and every cited evidence object fetched from its unit) as a new immutable revision (`GET {P}/books`). The result is the books summary with its `revision_id`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A books run already queued or running is returned instead. Needs `sync`.",
+      "help": "Queue a books run up to `as_of` (default: now): translate the ledger up to it, fetch the daily prices its events and its P&L series need from the price provider (every asset held and every open position's mark on each day end), validate the engine input, run the accounting engine over the series grid, audit, and seal the package (records, links, policy, coverage, corrections, prices, engine input and output with its rows and series, audit, and every cited evidence object fetched from its unit) as a new immutable revision (`GET {P}/books`). The result is the books summary with its `revision_id`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A books run already queued or running is returned instead. Needs `correct` (policy 05 rule 36).",
       "query": [],
       "body": {
         "media": "application/json",
@@ -2161,6 +2168,16 @@
             "choices": [],
             "required": false,
             "help": "Verified Only"
+          },
+          {
+            "path": [
+              "as_of"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "As Of"
           }
         ]
       },
@@ -2169,7 +2186,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books": {
       "summary": "Revisions",
-      "help": "One page of the sealed books revisions, newest first: when and by whom each was sealed, in which job, the imports it booked and its file count. `active` marks the newest.",
+      "help": "One page of the sealed books revisions, newest first: each one's status (`final`, `draft`, or `stale` when built under another policy than the portfolio's), `as_of`, policy, completeness and verification by account, when and by whom it was sealed, in which job, the imports it booked and its file count. `active` marks the newest.",
       "query": [
         {
           "name": "cursor",
@@ -2194,8 +2211,119 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}": {
       "summary": "Revision",
-      "help": "One sealed revision: its books summary as sealed (records, links, translation, engine completeness and exceptions, realized P&L by account and compartment, flows, pricing, audit) and its package files with their SHA-256.",
+      "help": "One sealed revision: its listing fields, its books summary as sealed (records, links, translation, engine completeness and exceptions, open positions, realized P&L by account, compartment and instrument, flows, the series' totals, pricing, audit) and its package files with their SHA-256.",
       "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/rows": {
+      "summary": "Rows",
+      "help": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings per lot key and liabilities at `as_of`, with cost, market value and unrealized P&L (null when not valued); the journal's double-entry lines. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows.",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "disposals",
+            "income",
+            "holdings",
+            "liabilities",
+            "journal"
+          ],
+          "required": true,
+          "help": "`disposals` (realized rows), `income` (income and expenses), `holdings` and `liabilities` at `as_of`, or `journal`."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A previous page's `next_cursor`; pass the same filters again."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/series": {
+      "summary": "Series",
+      "help": "A revision's P&L series (policy 05 rule 39) at each interval end from `from` to `to`: cost basis, market value and unrealized P&L per holding (with its account under compartment lot scope), liabilities and open perpetual positions at market, cumulative realized P&L and flows by nature label, total P&L, net assets and net contributions, and `period` (realized P&L, flows and total P&L changed since the previous interval end). A point with an asset or mark the price source has no price for says so (`complete` false, `missing`); nothing is valued at zero. 409 `rows-unavailable` for a revision sealed before revisions carried a series.",
+      "query": [
+        {
+          "name": "interval",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "day",
+            "month"
+          ],
+          "required": false,
+          "help": "Every UTC day end, or the last point of each month."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The first instant served."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The last instant served."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/totals": {
+      "summary": "Totals",
+      "help": "The headline figures of a revision's P&L series (policy 05 rule 36) at each interval end from `from` to `to`, for charts: per point its instant and UTC `date`, total value (`net_assets`), net contributions, total P&L, realized P&L, and whether it is `complete`, with the assets not priced at it (`missing`). The same points as `…/series`, without holdings, positions or flows. `revision_id` may be `current`: the newest revision built under the portfolio's current policy (404 when there is none). 409 `rows-unavailable` for a revision sealed before revisions carried a series.",
+      "query": [
+        {
+          "name": "interval",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "day",
+            "month"
+          ],
+          "required": false,
+          "help": "Every UTC day end, or the last point of each month."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The first instant served."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The last instant served."
+        }
+      ],
       "body": null,
       "job": false,
       "binary": false
@@ -2210,10 +2338,30 @@
     },
     "POST /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/replay": {
       "summary": "Replay",
-      "help": "Queue a replay of a sealed revision: verify every file of its package against the manifest and the records' evidence closure, check the pinned engine is the installed one, rebuild the engine input from the pinned records, links and policy, and run the engine again. No unit or provider is called. The result says whether the books `matched` and how many files were verified. A replay of the same revision already queued or running is returned instead. Needs `sync`.",
+      "help": "Queue a replay of a sealed revision: verify every file of its package against the manifest and the records' evidence closure, check the pinned engine is the installed one, rebuild the engine input from the pinned records, links and policy, run the engine again, and check its rows and series files. No unit or provider is called and nothing changes. The result says whether the books `matched` and how many files were verified. A replay of the same revision already queued or running is returned instead. Needs `read` (policy 05 rule 36: a check that changes nothing).",
       "query": [],
       "body": null,
       "job": true,
+      "binary": false
+    },
+    "POST /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/final": {
+      "summary": "Mark",
+      "help": "Mark a revision final for its `as_of` (policy 05 rule 26): the books the portfolio stands behind for that date, replacing the revision that was final for it (both stay). Open issues (`GET {P}/books/{rev}`'s `issues`: price gaps, engine exceptions, unbooked records, series points not valued, `failed` and `unassessable` coverage) never forbid it and need no acknowledgement; any given are recorded with their reason and count, and one that names no open issue is a 422. The mark records who made it and when, and states the revision's open-issue count (`open_issues`). A revision sealed without an `as_of` cannot be final (422). Needs `admin`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": []
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/final": {
+      "summary": "Unmark",
+      "help": "Unmark a final revision: its `as_of` has no final books until another is marked. 404 when it is not final. Needs `admin`.",
+      "query": [],
+      "body": null,
+      "job": false,
       "binary": false
     },
     "POST /v1/portfolio/portfolios/{portfolio_id}/sync": {

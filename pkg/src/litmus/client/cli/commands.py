@@ -179,7 +179,12 @@ PORTFOLIO = [
   Command(('books', 'build'), 'POST', f'{P}/books'),
   Command(('books', 'list'), 'GET', f'{P}/books'),
   Command(('books', 'show'), 'GET', f'{P}/books/{{revision_id}}'),
+  Command(('books', 'rows'), 'GET', f'{P}/books/{{revision_id}}/rows'),
+  Command(('books', 'series'), 'GET', f'{P}/books/{{revision_id}}/series'),
+  Command(('books', 'totals'), 'GET', f'{P}/books/{{revision_id}}/totals'),
   Command(('books', 'export'), 'GET', f'{P}/books/{{revision_id}}/export'),
+  Command(('books', 'final'), 'POST', f'{P}/books/{{revision_id}}/final'),
+  Command(('books', 'unfinal'), 'DELETE', f'{P}/books/{{revision_id}}/final'),
   Command(('replay',), 'POST', f'{P}/books/{{revision_id}}/replay'),
   Command(('currencies',), 'GET', '/v1/portfolio/currencies'),
 ]
