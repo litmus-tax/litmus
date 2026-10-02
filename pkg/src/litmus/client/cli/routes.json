@@ -2422,7 +2422,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/rows": {
       "summary": "Rows",
-      "help": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings per lot key and liabilities at `as_of`, with cost, market value and unrealized P&L (null when not valued); the journal's double-entry lines. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows.",
+      "help": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings per lot key and liabilities at `as_of`, with cost, market value and unrealized P&L (null when not valued); the journal's double-entry lines; the movements with outside parties (policy 05 sub-ledger Rule 7): one row per boundary transfer leg (date, account, compartment, asset, quantity, direction, value, basis `market` or `carried`, cost and realized gain or loss when out, counterparty or untagged with its flag, note, reference, correction id, who tagged it, record id), untagged first, with `counterparties`: each one's transfers, value in and out and balance at `as_of`, the untagged first as their subtotal. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows (for `boundary`, before they carried its movements with outside parties).",
       "query": [
         {
           "name": "kind",
@@ -2433,10 +2433,11 @@
             "income",
             "holdings",
             "liabilities",
-            "journal"
+            "journal",
+            "boundary"
           ],
           "required": true,
-          "help": "`disposals` (realized rows), `income` (income and expenses), `holdings` and `liabilities` at `as_of`, or `journal`."
+          "help": "`disposals` (realized rows), `income` (income and expenses), `holdings` and `liabilities` at `as_of`, `journal`, or `boundary` (movements with outside parties)."
         },
         {
           "name": "cursor",

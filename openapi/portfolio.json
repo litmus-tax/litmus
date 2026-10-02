@@ -6862,7 +6862,7 @@
           "books"
         ],
         "summary": "Rows",
-        "description": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings per lot key and liabilities at `as_of`, with cost, market value and unrealized P&L (null when not valued); the journal's double-entry lines. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows.",
+        "description": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings per lot key and liabilities at `as_of`, with cost, market value and unrealized P&L (null when not valued); the journal's double-entry lines; the movements with outside parties (policy 05 sub-ledger Rule 7): one row per boundary transfer leg (date, account, compartment, asset, quantity, direction, value, basis `market` or `carried`, cost and realized gain or loss when out, counterparty or untagged with its flag, note, reference, correction id, who tagged it, record id), untagged first, with `counterparties`: each one's transfers, value in and out and balance at `as_of`, the untagged first as their subtotal. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows (for `boundary`, before they carried its movements with outside parties).",
         "operationId": "rows_v1_portfolio_portfolios__portfolio_id__books__revision_id__rows_get",
         "security": [
           {
@@ -6898,13 +6898,14 @@
                 "income",
                 "holdings",
                 "liabilities",
-                "journal"
+                "journal",
+                "boundary"
               ],
               "type": "string",
-              "description": "`disposals` (realized rows), `income` (income and expenses), `holdings` and `liabilities` at `as_of`, or `journal`.",
+              "description": "`disposals` (realized rows), `income` (income and expenses), `holdings` and `liabilities` at `as_of`, `journal`, or `boundary` (movements with outside parties).",
               "title": "Kind"
             },
-            "description": "`disposals` (realized rows), `income` (income and expenses), `holdings` and `liabilities` at `as_of`, or `journal`."
+            "description": "`disposals` (realized rows), `income` (income and expenses), `holdings` and `liabilities` at `as_of`, `journal`, or `boundary` (movements with outside parties)."
           },
           {
             "name": "cursor",
@@ -11307,6 +11308,81 @@
         "title": "CounterpartyPatch",
         "description": "Change a counterparty in place (`id` never changes; Rule 3.1.5); a field left out keeps its value, `note` and `reference` take null to clear."
       },
+      "CounterpartyTotals": {
+        "properties": {
+          "tagged": {
+            "type": "boolean",
+            "title": "Tagged"
+          },
+          "counterparty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "mine": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mine"
+          },
+          "transfers": {
+            "type": "integer",
+            "title": "Transfers"
+          },
+          "value_in": {
+            "type": "string",
+            "title": "Value In"
+          },
+          "value_out": {
+            "type": "string",
+            "title": "Value Out"
+          },
+          "balance": {
+            "type": "string",
+            "title": "Balance"
+          },
+          "unvalued": {
+            "type": "integer",
+            "title": "Unvalued"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tagged",
+          "counterparty",
+          "label",
+          "mine",
+          "transfers",
+          "value_in",
+          "value_out",
+          "balance",
+          "unvalued"
+        ],
+        "title": "CounterpartyTotals",
+        "description": "One counterparty's boundary transfers (sub-ledger Rule 7.3); the untagged ones as one entry, `tagged` false."
+      },
       "CounterpartyUpdate": {
         "properties": {
           "counterparty": {
@@ -15051,7 +15127,8 @@
               "income",
               "holdings",
               "liabilities",
-              "journal"
+              "journal",
+              "boundary"
             ],
             "title": "Kind"
           },
@@ -15079,6 +15156,13 @@
               }
             ],
             "title": "Next Cursor"
+          },
+          "counterparties": {
+            "items": {
+              "$ref": "#/components/schemas/CounterpartyTotals"
+            },
+            "type": "array",
+            "title": "Counterparties"
           }
         },
         "type": "object",
