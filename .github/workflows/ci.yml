@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # The public client depends on no other Litmus repository (policy 02 interfaces Rule 7.9).
 jobs:
   checks:
@@ -17,6 +21,7 @@ jobs:
           path: litmus
       - uses: astral-sh/setup-uv@v10.2.0
         with:
+          enable-cache: true
           python-version: '3.12'
           activate-environment: true
       - run: uv pip install -e 'litmus/pkg[dev]'
