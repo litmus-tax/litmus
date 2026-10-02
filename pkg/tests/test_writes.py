@@ -242,3 +242,43 @@ def test_following_survives_a_gateway_error(
   result = keyed('jobs', 'watch', 'j')
   assert (result.code, result.json()) == (0, {'id': 'j', 'status': 'succeeded'})
   assert 'retrying' in result.stderr
+
+
+def test_counterparties_and_the_tags_that_name_them(
+  keyed: Callable[..., Result], deployment: Deployment
+):
+  """`counterparties add` sends the new counterparty; a tag names one by `--counterparty ID`, or creates one by its own fields.
+
+  # policy 05 sub-ledger rules 3.3 and 16
+  """
+  P = '/v1/portfolio/portfolios/personal'
+  deployment.on('POST', f'{P}/counterparties', {'id': 'marcel-loan'}, status=201)
+  added = keyed(
+    'counterparties', 'add', '--portfolio', 'personal', '--label', 'Marcel (loan)',
+    '--no-mine', '--note', 'shareholder loan',
+  )  # fmt: skip
+  assert added.code == 0
+  assert sent(deployment.requests[-1]) == {
+    'label': 'Marcel (loan)',
+    'mine': False,
+    'note': 'shareholder loan',
+  }
+  accepted = {'job': 'correct-1', 'status': 'queued'}
+  deployment.routes[('POST', f'{P}/corrections')] = lambda request: httpx.Response(
+    202, json=accepted, headers={'Location': '/v1/portfolio/jobs/correct-1'}
+  )
+  tag = ('corrections', 'add', '--portfolio', 'personal', '--kind', 'classify_boundary')
+  keyed(*tag, '--record', 'r1', '--note', 'loan', '--counterparty', 'marcel-loan', '--detach')  # fmt: skip
+  assert sent(deployment.requests[-1]) == {
+    'kind': 'classify_boundary',
+    'record': 'r1',
+    'note': 'loan',
+    'counterparty': 'marcel-loan',
+  }
+  keyed(*tag, '--record', 'r2', '--note', 'bank', '--label', 'Company bank', '--no-mine', '--detach')  # fmt: skip
+  assert sent(deployment.requests[-1]) == {
+    'kind': 'classify_boundary',
+    'record': 'r2',
+    'note': 'bank',
+    'counterparty': {'label': 'Company bank', 'mine': False},
+  }

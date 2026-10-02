@@ -3413,7 +3413,7 @@
           "corrections"
         ],
         "summary": "Corrections",
-        "description": "One page of the portfolio's corrections in application order, each with who recorded it and when, whether it was withdrawn (by whom, when) and the links it owns.",
+        "description": "One page of the portfolio's corrections in force in application order, each with who recorded it, when, in which job, the AI-made mark when an agent's API key made it, and the links it owns. A withdrawn correction is not kept (policy 05 sub-ledger Rule 3.7).",
         "operationId": "corrections_v1_portfolio_portfolios__portfolio_id__corrections_get",
         "security": [
           {
@@ -3443,10 +3443,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Only withdrawn (true) or only active (false) ones.",
+              "description": "`true` lists none: a withdrawn correction is deleted, with no history (policy 01 portfolio Rule 7.3); `false` or absent lists those in force.",
               "title": "Withdrawn"
             },
-            "description": "Only withdrawn (true) or only active (false) ones."
+            "description": "`true` lists none: a withdrawn correction is deleted, with no history (policy 01 portfolio Rule 7.3); `false` or absent lists those in force."
           },
           {
             "name": "cursor",
@@ -3603,7 +3603,7 @@
           "corrections"
         ],
         "summary": "Correction New",
-        "description": "Queue a correction job that applies the correction, recorded with the token's subject, the time and the job, or previews it (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}`, whose `result` is the `CorrectionResult`. `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` takes a transfer out of the unmatched ones as an external movement, which books book at market value, or at carried cost when the owner retains the asset (an inbound retained transfer needs `acquisition_price` and `acquisition_time`, else 422; policy 05 rule 13.3). The result's `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. The records are checked before the job is queued, and again by the job: they must be unlinked, unclassified transfers (404 `record-not-found`, 409 `correction-conflict`, 422 otherwise). An identical request of the same user joins the job already queued or running.",
+        "description": "Queue a correction job that applies the correction, recorded with the token's subject, the time and the job, or previews it (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}`, whose `result` is the `CorrectionResult`. `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` tags an unlinked transfer as a boundary transfer with the counterparty on the other side (policy 05 sub-ledger Rule 3.3): an id from `GET {P}/counterparties`, or `{label, mine, note?, reference?}`, created in the same job; `replaces` withdraws that tag of the same record in the same job. Its counterparty's flag decides the booking (Rule 2): someone else, at market value both ways; mine, out at cost and in at market value as the new cost; never income or expense. `ownership_retained` is derived from the flag, and one that disagrees is a 422. The correction records the token's subject, the job and, for an agent's API key, the AI-made mark. The result's `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. The records are checked before the job is queued, and again by the job: they must be unlinked, unclassified transfers (404 `record-not-found` or `counterparty-not-found`, 409 `correction-conflict`, 422 otherwise). An identical request of the same user joins the job already queued or running.",
         "operationId": "correction_new_v1_portfolio_portfolios__portfolio_id__corrections_post",
         "security": [
           {
@@ -4012,7 +4012,7 @@
           "corrections"
         ],
         "summary": "Correction",
-        "description": "One correction, withdrawn or not.",
+        "description": "One correction in force; 404 once withdrawn.",
         "operationId": "correction_v1_portfolio_portfolios__portfolio_id__corrections__correction_id__get",
         "security": [
           {
@@ -4162,7 +4162,7 @@
           "corrections"
         ],
         "summary": "Correction Withdraw",
-        "description": "Queue a correction job that withdraws a correction as the token's subject (it stays listed with `withdrawn_at`/`withdrawn_by`/`withdrawn_job` and applies no more; a merge's link is deleted), or previews that (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}` for the `CorrectionResult` with the same `effect`. 404 `correction-not-found`, and 409 `correction-conflict` when already withdrawn, before anything is queued.",
+        "description": "Queue a correction job that withdraws a correction: it is deleted with the links it owns, and no record of it, or of who withdrew it, is kept (policy 01 portfolio Rule 7.3); or previews that (`?dry_run=true`, which needs only `read`). Poll `GET /jobs/{id}` for the `CorrectionResult` (the correction as it was) with its `effect`. 404 `correction-not-found` when no such correction is in force, before anything is queued.",
         "operationId": "correction_withdraw_v1_portfolio_portfolios__portfolio_id__corrections__correction_id__delete",
         "security": [
           {
@@ -4199,6 +4199,793 @@
               "title": "Dry Run"
             },
             "description": "Preview only: the effect of applying it, from a scratch derivation; nothing is written."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 255
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Retrying with the same key returns the same job instead of starting another.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Retrying with the same key returns the same job instead of starting another."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAccepted"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/v1/portfolio/portfolios/{portfolio_id}/counterparties": {
+      "get": {
+        "tags": [
+          "counterparties"
+        ],
+        "summary": "Counterparties",
+        "description": "The portfolio's counterparties by label, each with the transfers it tags (`tags`) and what they moved per asset, in minus out (`quantities`). A counterparty is custom, current state only, and never identified by address (Rule 3.1).",
+        "operationId": "counterparties_v1_portfolio_portfolios__portfolio_id__counterparties_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CounterpartyList"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "counterparties"
+        ],
+        "summary": "Counterparty New",
+        "description": "Create a counterparty `{label, mine, note?, reference?}`: `mine` when the asset stays the owner's in an account Litmus does not track yet, else someone else (Rule 3.1). Its `id` is a slug of the label (`Marcel (loan)` → `marcel-loan`), fixed once created; it records who created it. A tag can also create one (`POST {P}/corrections`).",
+        "operationId": "counterparty_new_v1_portfolio_portfolios__portfolio_id__counterparties_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewCounterpartyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CounterpartyEntry"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/v1/portfolio/portfolios/{portfolio_id}/counterparties/{counterparty_id}": {
+      "get": {
+        "tags": [
+          "counterparties"
+        ],
+        "summary": "Counterparty",
+        "description": "One counterparty with the transfers it tags; 404 `counterparty-not-found`.",
+        "operationId": "counterparty_v1_portfolio_portfolios__portfolio_id__counterparties__counterparty_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "counterparty_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Counterparty Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CounterpartyEntry"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "counterparties"
+        ],
+        "summary": "Counterparty Patch",
+        "description": "Change `label`, `mine`, `note` or `reference` in place, with no version kept (Rule 3.1.5). A flag change rebooks every transfer it tags (Rule 3.2): their tags follow it, and when it tags any, a derive job is queued (`derive_job`); reads serve the previous items until it finishes.",
+        "operationId": "counterparty_patch_v1_portfolio_portfolios__portfolio_id__counterparties__counterparty_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "counterparty_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Counterparty Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterpartyPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CounterpartyUpdate"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "counterparties"
+        ],
+        "summary": "Counterparty Delete",
+        "description": "Queue a correction job that deletes the counterparty and withdraws every tag that names it, so those transfers are untagged again (Rule 3.1.6); nothing of it is kept (Rule 3.7). With `?dry_run=true` (which needs only `read`) the job lists the tags it would withdraw and their effect, and writes nothing. Poll `GET /jobs/{id}`: its `result` is `{dry_run, counterparty, withdrawn, effect}`. 404 `counterparty-not-found` before anything is queued.",
+        "operationId": "counterparty_delete_v1_portfolio_portfolios__portfolio_id__counterparties__counterparty_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "counterparty_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Counterparty Id"
+            }
+          },
+          {
+            "name": "dry_run",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Preview only: list the tags it would withdraw and their effect; nothing is written.",
+              "default": false,
+              "title": "Dry Run"
+            },
+            "description": "Preview only: list the tags it would withdraw and their effect; nothing is written."
           },
           {
             "name": "idempotency-key",
@@ -9289,6 +10076,20 @@
         "title": "AcknowledgementItem",
         "description": "An admin's acknowledgement of one open issue (policy 05 rule 26.2)."
       },
+      "AgentMark": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "AgentMark",
+        "description": "The AI agent whose API key made a correction (policy 02 access Rule 12.11); only ever taken from the credential."
+      },
       "ApplyRequest": {
         "properties": {
           "accounts": {
@@ -9866,6 +10667,28 @@
             "type": "string",
             "title": "Note"
           },
+          "counterparty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
           "external_account": {
             "anyOf": [
               {
@@ -9910,7 +10733,7 @@
           "note"
         ],
         "title": "ClassifyBoundary",
-        "description": "Correction: classify an unmatched transfer as an external movement."
+        "description": "Correction: classify an unmatched transfer as an external movement; with a counterparty, the boundary transfer's tag (policy 05 sub-ledger Rule 3.3)."
       },
       "ClassifyBoundaryBody": {
         "properties": {
@@ -9930,38 +10753,52 @@
             "minLength": 1,
             "title": "Note"
           },
+          "counterparty": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]{0,79}$"
+              },
+              {
+                "$ref": "#/components/schemas/NewCounterpartyBody"
+              }
+            ],
+            "title": "Counterparty"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "replaces": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaces"
+          },
           "ownership_retained": {
-            "type": "boolean",
-            "title": "Ownership Retained",
-            "default": false
-          },
-          "acquisition_price": {
             "anyOf": [
               {
-                "type": "number",
-                "minimum": 0.0
-              },
-              {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "type": "boolean"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Acquisition Price"
-          },
-          "acquisition_time": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Acquisition Time"
+            "title": "Ownership Retained"
           }
         },
         "additionalProperties": false,
@@ -9969,10 +10806,11 @@
         "required": [
           "kind",
           "record",
-          "note"
+          "note",
+          "counterparty"
         ],
         "title": "ClassifyBoundaryBody",
-        "description": "Classify an unmatched transfer as an external movement (in from, or out to, outside the portfolio)."
+        "description": "Tag an unlinked transfer as a boundary transfer (in from, or out to, outside the portfolio) with the counterparty on the other side (policy 05 sub-ledger Rule 3.3)."
       },
       "CompartmentValue": {
         "properties": {
@@ -10208,28 +11046,6 @@
             "type": "string",
             "title": "Created By"
           },
-          "withdrawn_at": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Withdrawn At"
-          },
-          "withdrawn_by": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Withdrawn By"
-          },
           "created_job": {
             "anyOf": [
               {
@@ -10241,20 +11057,15 @@
             ],
             "title": "Created Job"
           },
-          "withdrawn_job": {
+          "agent": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/AgentMark"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Withdrawn Job"
-          },
-          "active": {
-            "type": "boolean",
-            "title": "Active"
+            ]
           },
           "links": {
             "items": {
@@ -10271,15 +11082,12 @@
           "correction",
           "created_at",
           "created_by",
-          "withdrawn_at",
-          "withdrawn_by",
           "created_job",
-          "withdrawn_job",
-          "active",
+          "agent",
           "links"
         ],
         "title": "CorrectionEntry",
-        "description": "One correction with who recorded and withdrew it."
+        "description": "One correction in force with who recorded it (policy 05 sub-ledger Rule 3.7)."
       },
       "CorrectionList": {
         "properties": {
@@ -10313,7 +11121,7 @@
           "next_cursor"
         ],
         "title": "CorrectionList",
-        "description": "One page of the portfolio's corrections in application order (policy 03 contract rule 15)."
+        "description": "One page of the portfolio's corrections in force in application order (policy 03 contract rule 15)."
       },
       "Counterpart": {
         "properties": {
@@ -10347,6 +11155,182 @@
         ],
         "title": "Counterpart",
         "description": "An unlinked record of the opposite direction, and why it did not link with the leg."
+      },
+      "CounterpartyEntry": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "mine": {
+            "type": "boolean",
+            "title": "Mine"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "created_by": {
+            "type": "string",
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "tags": {
+            "type": "integer",
+            "title": "Tags"
+          },
+          "quantities": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Quantities"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "mine",
+          "note",
+          "reference",
+          "created_by",
+          "created_at",
+          "tags",
+          "quantities"
+        ],
+        "title": "CounterpartyEntry",
+        "description": "One counterparty with the boundary transfers it tags (`GET {P}/counterparties`, Rule 3.10)."
+      },
+      "CounterpartyList": {
+        "properties": {
+          "counterparties": {
+            "items": {
+              "$ref": "#/components/schemas/CounterpartyEntry"
+            },
+            "type": "array",
+            "title": "Counterparties"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "counterparties",
+          "count"
+        ],
+        "title": "CounterpartyList",
+        "description": "The portfolio's counterparties, by label."
+      },
+      "CounterpartyPatch": {
+        "properties": {
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "mine": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mine"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CounterpartyPatch",
+        "description": "Change a counterparty in place (`id` never changes; Rule 3.1.5); a field left out keeps its value, `note` and `reference` take null to clear."
+      },
+      "CounterpartyUpdate": {
+        "properties": {
+          "counterparty": {
+            "$ref": "#/components/schemas/CounterpartyEntry"
+          },
+          "changes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Changes"
+          },
+          "derive_job": {
+            "type": "string",
+            "title": "Derive Job"
+          }
+        },
+        "type": "object",
+        "required": [
+          "counterparty",
+          "changes"
+        ],
+        "title": "CounterpartyUpdate",
+        "description": "A counterparty after an edit, and the fields that changed."
       },
       "CoverageValue": {
         "properties": {
@@ -11962,6 +12946,54 @@
         ],
         "title": "MergeInternalBody",
         "description": "Declare two records one internal movement: `withdrawal` leaves one account, `deposit` arrives in another (ids from `GET {P}/corrections/candidates`)."
+      },
+      "NewCounterpartyBody": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "mine": {
+            "type": "boolean",
+            "title": "Mine"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "mine"
+        ],
+        "title": "NewCounterpartyBody",
+        "description": "A new counterparty of the portfolio (policy 05 sub-ledger Rule 3.1): who is on the other side of boundary transfers, with one flag."
       },
       "NobleAccountCreate": {
         "properties": {
@@ -13641,6 +14673,13 @@
             "type": "array",
             "title": "Issues"
           },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/RevisionWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
           "summary": {
             "additionalProperties": {
               "$ref": "#/components/schemas/JsonValue"
@@ -13673,6 +14712,7 @@
           "imports",
           "files",
           "issues",
+          "warnings",
           "summary",
           "package_files"
         ],
@@ -13870,6 +14910,43 @@
         ],
         "title": "RevisionSummary",
         "description": "A sealed books revision in a listing."
+      },
+      "RevisionWarning": {
+        "properties": {
+          "warning": {
+            "type": "string",
+            "enum": [
+              "untagged_boundary:in",
+              "untagged_boundary:out",
+              "untagged_boundary",
+              "from_untracked_account"
+            ],
+            "title": "Warning"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "warning",
+          "count",
+          "value"
+        ],
+        "title": "RevisionWarning",
+        "description": "One warning of a revision: never an open issue, it stops no build, final mark or export (policy 05 sub-ledger Rule 6.3)."
       },
       "Route": {
         "properties": {

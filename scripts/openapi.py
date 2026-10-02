@@ -100,6 +100,13 @@ class Document:
       return 'string', False, choices
     return None
 
+  def scalar_member(self, schema: dict[str, Any]) -> tuple[str, bool, list[str]] | None:
+    """The scalar member of a union of a scalar and objects (an id, or an object to create one), else `None`."""
+    schema = self.resolve(schema)
+    members = schema.get('anyOf') or schema.get('oneOf') or []
+    kinds = [k for k in (self.kind(m) for m in members) if k and not k[1]]
+    return kinds[0] if len(kinds) == 1 and self.variants(schema) else None
+
   def fields(self, schema: dict[str, Any]) -> list[dict[str, Any]]:
     """Body fields: scalar properties, and one level of nested object properties."""
     found: dict[str, dict[str, Any]] = {}
@@ -112,6 +119,9 @@ class Document:
         if kind:
           entries.append(([name], kind, name in required, self.help(value)))
         else:
+          scalar = self.scalar_member(value)
+          if scalar:
+            entries.append(([name], scalar, False, self.help(value)))
           for nested in self.variants(value):
             inner_required = set(nested.get('required', []))
             for key, inner in nested.get('properties', {}).items():
