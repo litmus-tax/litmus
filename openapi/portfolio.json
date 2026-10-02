@@ -986,6 +986,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/LighterAccountCreate"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NobleAccountCreate"
                   }
                 ],
                 "discriminator": {
@@ -996,7 +999,8 @@
                     "dydx": "#/components/schemas/DydxAccountCreate",
                     "cex": "#/components/schemas/CexAccountCreate",
                     "aster": "#/components/schemas/AsterAccountCreate",
-                    "lighter": "#/components/schemas/LighterAccountCreate"
+                    "lighter": "#/components/schemas/LighterAccountCreate",
+                    "noble": "#/components/schemas/NobleAccountCreate"
                   }
                 },
                 "title": "Body"
@@ -1279,7 +1283,7 @@
           "portfolios"
         ],
         "summary": "Account Patch",
-        "description": "Rename (`label`), archive or restore (`archived`), or change the margin model (re-checking its resources); the id never changes. Archiving, restoring or a margin model change queues a derive job (`derive_job`); reads serve the previous holdings and items until it finishes.",
+        "description": "Rename (`label`), archive or restore (`archived`); the id never changes. Archiving or restoring queues a derive job (`derive_job`); reads serve the previous holdings and items until it finishes.",
         "operationId": "account_patch_v1_portfolio_portfolios__portfolio_id__accounts__account__patch",
         "security": [
           {
@@ -3599,7 +3603,7 @@
           "corrections"
         ],
         "summary": "Correction New",
-        "description": "Queue a correction job that applies the correction, recorded with the token's subject, the time and the job, or previews it (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}`, whose `result` is the `CorrectionResult`. `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` takes a transfer out of the unmatched ones as an external movement. The result's `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. The records are checked before the job is queued, and again by the job: they must be unlinked, unclassified transfers (404 `record-not-found`, 409 `correction-conflict`, 422 otherwise). An identical request of the same user joins the job already queued or running.",
+        "description": "Queue a correction job that applies the correction, recorded with the token's subject, the time and the job, or previews it (`?dry_run=true`, which needs only `read`); poll `GET /jobs/{id}`, whose `result` is the `CorrectionResult`. `merge_internal` links a withdrawal and a deposit as one internal movement; `classify_boundary` takes a transfer out of the unmatched ones as an external movement, which books book at market value, or at carried cost when the owner retains the asset (an inbound retained transfer needs `acquisition_price` and `acquisition_time`, else 422; policy 05 rule 13.3). The result's `effect` lists the records concerned (before/after: `link`, `classified`, `unmatched`), the links added, the open items resolved, added or changed, and the balances that move. The records are checked before the job is queued, and again by the job: they must be unlinked, unclassified transfers (404 `record-not-found`, 409 `correction-conflict`, 422 otherwise). An identical request of the same user joins the job already queued or running.",
         "operationId": "correction_new_v1_portfolio_portfolios__portfolio_id__corrections_post",
         "security": [
           {
@@ -4894,7 +4898,7 @@
           "ledger"
         ],
         "summary": "Unmatched Legs",
-        "description": "One page of the unmatched transfer legs (the records `unmatched_transfer` items count), oldest first, each beside its `nearest` counterparts: unlinked transfer-like records of the opposite direction in any account, fewest reasons first, then nearest in time, each with why it did not link at the loosest rung of reconciliation (`same_account`, `type`, `unresolved_asset`, `asset`, `network`, `tx_id`, `amount`: above what was sent or more than 5% below it, `window`: more than 30 days after, or more than 1 hour before). No reasons means a reconciliation would link them now. Unsolicited receipts are never legs, only counterparts. Resolve a leg with a correction (`POST {P}/corrections`).",
+        "description": "One page of the unmatched transfer legs (the records `unmatched_transfer` items count), oldest first, each beside its `nearest` counterparts: unlinked transfer-like records of the same asset and the opposite direction in any account, fewest reasons first, then nearest in time, each with why it did not link at the loosest rung of reconciliation (`same_resource`: both from one resource, such as one network of an evm account; `type`, `unresolved_asset`, `network`, `tx_id`, `amount`: above what was sent or more than 5% below it, `window`: more than 30 days after, or more than 1 hour before; `ambiguous`: every rule accepts the pair, but other candidates competed, so reconciliation left both). No reasons means a reconciliation would link them now (records synced since the last one). Unsolicited receipts are never legs, only counterparts. Resolve a leg with a correction (`POST {P}/corrections`).",
         "operationId": "unmatched_legs_v1_portfolio_portfolios__portfolio_id__unmatched_get",
         "security": [
           {
@@ -5565,10 +5569,10 @@
     "/v1/portfolio/portfolios/{portfolio_id}/books": {
       "post": {
         "tags": [
-          "ledger"
+          "books"
         ],
         "summary": "Books",
-        "description": "Queue a books run: translate the ledger, fetch the daily prices it needs from the price provider, validate the engine input, run the accounting engine, audit, and seal the package (records, links, policy, coverage, corrections, prices, engine input and output, audit, and every cited evidence object fetched from its unit) as a new immutable revision (`GET {P}/books`). The result is the books summary with its `revision_id`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A books run already queued or running is returned instead. Needs `sync`.",
+        "description": "Queue a books run up to `as_of` (default: now): translate the ledger up to it, fetch the daily prices its events and its P&L series need from the price provider (every asset held and every open position's mark on each day end), validate the engine input, run the accounting engine over the series grid, audit, and seal the package (records, links, policy, coverage, corrections, prices, engine input and output with its rows and series, audit, and every cited evidence object fetched from its unit) as a new immutable revision (`GET {P}/books`). The result is the books summary with its `revision_id`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A books run already queued or running is returned instead. Needs `correct` (policy 05 rule 36).",
         "operationId": "books_v1_portfolio_portfolios__portfolio_id__books_post",
         "security": [
           {
@@ -5742,10 +5746,10 @@
       },
       "get": {
         "tags": [
-          "ledger"
+          "books"
         ],
         "summary": "Revisions",
-        "description": "One page of the sealed books revisions, newest first: when and by whom each was sealed, in which job, the imports it booked and its file count. `active` marks the newest.",
+        "description": "One page of the sealed books revisions, newest first: each one's status (`final`, `draft`, or `stale` when built under another policy than the portfolio's), `as_of`, policy, completeness and verification by account, when and by whom it was sealed, in which job, the imports it booked and its file count. `active` marks the newest.",
         "operationId": "revisions_v1_portfolio_portfolios__portfolio_id__books_get",
         "security": [
           {
@@ -5916,10 +5920,10 @@
     "/v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}": {
       "get": {
         "tags": [
-          "ledger"
+          "books"
         ],
         "summary": "Revision",
-        "description": "One sealed revision: its books summary as sealed (records, links, translation, engine completeness and exceptions, realized P&L by account and compartment, flows, pricing, audit) and its package files with their SHA-256.",
+        "description": "One sealed revision: its listing fields, its books summary as sealed (records, links, translation, engine completeness and exceptions, open positions, realized P&L by account, compartment and instrument, flows, the series' totals, pricing, audit) and its package files with their SHA-256.",
         "operationId": "revision_v1_portfolio_portfolios__portfolio_id__books__revision_id__get",
         "security": [
           {
@@ -6065,10 +6069,623 @@
         }
       }
     },
+    "/v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/rows": {
+      "get": {
+        "tags": [
+          "books"
+        ],
+        "summary": "Rows",
+        "description": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings per lot key and liabilities at `as_of`, with cost, market value and unrealized P&L (null when not valued); the journal's double-entry lines. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows.",
+        "operationId": "rows_v1_portfolio_portfolios__portfolio_id__books__revision_id__rows_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "disposals",
+                "income",
+                "holdings",
+                "liabilities",
+                "journal"
+              ],
+              "type": "string",
+              "description": "`disposals` (realized rows), `income` (income and expenses), `holdings` and `liabilities` at `as_of`, or `journal`.",
+              "title": "Kind"
+            },
+            "description": "`disposals` (realized rows), `income` (income and expenses), `holdings` and `liabilities` at `as_of`, or `journal`."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 512
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A previous page's `next_cursor`; pass the same filters again.",
+              "title": "Cursor"
+            },
+            "description": "A previous page's `next_cursor`; pass the same filters again."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RowsPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/series": {
+      "get": {
+        "tags": [
+          "books"
+        ],
+        "summary": "Series",
+        "description": "A revision's P&L series (policy 05 rule 39) at each interval end from `from` to `to`: cost basis, market value and unrealized P&L per holding (with its account under compartment lot scope), liabilities and open perpetual positions at market, cumulative realized P&L and flows by nature label, total P&L, net assets and net contributions, and `period` (realized P&L, flows and total P&L changed since the previous interval end). A point with an asset or mark the price source has no price for says so (`complete` false, `missing`); nothing is valued at zero. 409 `rows-unavailable` for a revision sealed before revisions carried a series.",
+        "operationId": "series_v1_portfolio_portfolios__portfolio_id__books__revision_id__series_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "interval",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "day",
+                "month"
+              ],
+              "type": "string",
+              "description": "Every UTC day end, or the last point of each month.",
+              "default": "day",
+              "title": "Interval"
+            },
+            "description": "Every UTC day end, or the last point of each month."
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The first instant served.",
+              "title": "From"
+            },
+            "description": "The first instant served."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The last instant served.",
+              "title": "To"
+            },
+            "description": "The last instant served."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeriesPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/totals": {
+      "get": {
+        "tags": [
+          "books"
+        ],
+        "summary": "Totals",
+        "description": "The headline figures of a revision's P&L series (policy 05 rule 36) at each interval end from `from` to `to`, for charts: per point its instant and UTC `date`, total value (`net_assets`), net contributions, total P&L, realized P&L, and whether it is `complete`, with the assets not priced at it (`missing`). The same points as `…/series`, without holdings, positions or flows. `revision_id` may be `current`: the newest revision built under the portfolio's current policy (404 when there is none). 409 `rows-unavailable` for a revision sealed before revisions carried a series.",
+        "operationId": "totals_v1_portfolio_portfolios__portfolio_id__books__revision_id__totals_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "interval",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "day",
+                "month"
+              ],
+              "type": "string",
+              "description": "Every UTC day end, or the last point of each month.",
+              "default": "day",
+              "title": "Interval"
+            },
+            "description": "Every UTC day end, or the last point of each month."
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The first instant served.",
+              "title": "From"
+            },
+            "description": "The first instant served."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The last instant served.",
+              "title": "To"
+            },
+            "description": "The last instant served."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotalsPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
     "/v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/export": {
       "get": {
         "tags": [
-          "ledger"
+          "books"
         ],
         "summary": "Export",
         "description": "The sealed package of a revision as a zip file: every artifact at its package path, each verified against its hash when read. `manifest.json` lists the files with their SHA-256; unzip it and run a replay offline, or `POST …/replay` to replay it here.",
@@ -6216,10 +6833,10 @@
     "/v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/replay": {
       "post": {
         "tags": [
-          "ledger"
+          "books"
         ],
         "summary": "Replay",
-        "description": "Queue a replay of a sealed revision: verify every file of its package against the manifest and the records' evidence closure, check the pinned engine is the installed one, rebuild the engine input from the pinned records, links and policy, and run the engine again. No unit or provider is called. The result says whether the books `matched` and how many files were verified. A replay of the same revision already queued or running is returned instead. Needs `sync`.",
+        "description": "Queue a replay of a sealed revision: verify every file of its package against the manifest and the records' evidence closure, check the pinned engine is the installed one, rebuild the engine input from the pinned records, links and policy, run the engine again, and check its rows and series files. No unit or provider is called and nothing changes. The result says whether the books `matched` and how many files were verified. A replay of the same revision already queued or running is returned instead. Needs `read` (policy 05 rule 36: a check that changes nothing).",
         "operationId": "replay_v1_portfolio_portfolios__portfolio_id__books__revision_id__replay_post",
         "security": [
           {
@@ -6275,6 +6892,311 @@
                 }
               }
             }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
+    "/v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/final": {
+      "post": {
+        "tags": [
+          "books"
+        ],
+        "summary": "Mark",
+        "description": "Mark a revision final for its `as_of` (policy 05 rule 26): the books the portfolio stands behind for that date, replacing the revision that was final for it (both stay). Open issues (`GET {P}/books/{rev}`'s `issues`: price gaps, engine exceptions, unbooked records, series points not valued, `failed` and `unassessable` coverage) never forbid it and need no acknowledgement; any given are recorded with their reason and count, and one that names no open issue is a 422. The mark records who made it and when, and states the revision's open-issue count (`open_issues`). A revision sealed without an `as_of` cannot be final (422). Needs `admin`.",
+        "operationId": "mark_v1_portfolio_portfolios__portfolio_id__books__revision_id__final_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinalBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinalMark"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "books"
+        ],
+        "summary": "Unmark",
+        "description": "Unmark a final revision: its `as_of` has no final books until another is marked. 404 when it is not final. Needs `admin`.",
+        "operationId": "unmark_v1_portfolio_portfolios__portfolio_id__books__revision_id__final_delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Revision Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "401": {
             "content": {
@@ -7590,7 +8512,8 @@
                 "dydx",
                 "evm",
                 "hl",
-                "lighter"
+                "lighter",
+                "noble"
               ],
               "type": "string",
               "title": "Unit"
@@ -7795,7 +8718,8 @@
               "dydx",
               "evm",
               "hl",
-              "lighter"
+              "lighter",
+              "noble"
             ],
             "title": "Unit"
           },
@@ -8010,6 +8934,17 @@
             ],
             "title": "Margin Model"
           },
+          "settlements": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "notional",
+                "pnl"
+              ]
+            },
+            "type": "object",
+            "title": "Settlements"
+          },
           "venue": {
             "type": "string",
             "title": "Venue"
@@ -8041,8 +8976,7 @@
         "required": [
           "account",
           "unit",
-          "key",
-          "margin_model"
+          "key"
         ],
         "title": "AccountInfo",
         "description": "Account facts recorded in coverage at sync time, read back by translate and audit."
@@ -8221,22 +9155,6 @@
               }
             ],
             "title": "Archived"
-          },
-          "margin_model": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "notional",
-                  "pnl_settled",
-                  "none"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Margin Model"
           }
         },
         "additionalProperties": false,
@@ -8324,6 +9242,53 @@
         "title": "AccountValuation",
         "description": "One account's part of the valuation."
       },
+      "Acknowledgement": {
+        "properties": {
+          "issue": {
+            "type": "string",
+            "title": "Issue"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "issue",
+          "count",
+          "reason"
+        ],
+        "title": "Acknowledgement",
+        "description": "One open issue of a final revision, acknowledged (policy 05 rule 26.2)."
+      },
+      "AcknowledgementItem": {
+        "properties": {
+          "issue": {
+            "type": "string",
+            "title": "Issue"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "issue",
+          "reason"
+        ],
+        "title": "AcknowledgementItem",
+        "description": "An admin's acknowledgement of one open issue (policy 05 rule 26.2)."
+      },
       "ApplyRequest": {
         "properties": {
           "accounts": {
@@ -8342,6 +9307,7 @@
             "default": {
               "functional_currency": "usd",
               "cost_method": "fifo",
+              "perp_cost_method": "average",
               "lot_scope": "global",
               "price_time": "trade_time",
               "fiat": [
@@ -8352,14 +9318,12 @@
               "fee_treatment": "expense",
               "minor_unit": 2,
               "liability_valuation": "cost",
-              "loan_interest": "accrued",
               "audit_value_allowance": "0",
               "position_entry": "carry",
               "withdrawal_recognition": "receipt",
               "claim_disposal": "realize",
-              "position_allocations": {},
-              "operation_values": {},
               "unsolicited": "ignore",
+              "unsolicited_dust": "1",
               "accrual": "monthly",
               "accrual_dates": []
             }
@@ -8461,22 +9425,6 @@
               }
             ],
             "title": "Resource Id"
-          },
-          "margin_model": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "notional",
-                  "pnl_settled",
-                  "none"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Margin Model"
           },
           "unit": {
             "type": "string",
@@ -8601,6 +9549,18 @@
             "type": "boolean",
             "title": "Verified Only",
             "default": false
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
           }
         },
         "additionalProperties": false,
@@ -8865,22 +9825,6 @@
             ],
             "title": "Resource Id"
           },
-          "margin_model": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "notional",
-                  "pnl_settled",
-                  "none"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Margin Model"
-          },
           "unit": {
             "type": "string",
             "const": "cex",
@@ -8888,11 +9832,7 @@
           },
           "venue": {
             "type": "string",
-            "enum": [
-              "bitget",
-              "mexc",
-              "bit2me"
-            ],
+            "pattern": "^[a-z0-9_-]{1,64}$",
             "title": "Venue"
           }
         },
@@ -8994,6 +9934,34 @@
             "type": "boolean",
             "title": "Ownership Retained",
             "default": false
+          },
+          "acquisition_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acquisition Price"
+          },
+          "acquisition_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acquisition Time"
           }
         },
         "additionalProperties": false,
@@ -9356,7 +10324,7 @@
             "items": {
               "type": "string",
               "enum": [
-                "same_account",
+                "same_resource",
                 "direction",
                 "type",
                 "unresolved_asset",
@@ -9541,22 +10509,6 @@
             ],
             "title": "Resource Id"
           },
-          "margin_model": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "notional",
-                  "pnl_settled",
-                  "none"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Margin Model"
-          },
           "unit": {
             "type": "string",
             "const": "dydx",
@@ -9627,22 +10579,6 @@
               }
             ],
             "title": "Resource Id"
-          },
-          "margin_model": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "notional",
-                  "pnl_settled",
-                  "none"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Margin Model"
           },
           "unit": {
             "type": "string",
@@ -9767,6 +10703,64 @@
         "title": "FieldChange",
         "description": "A stored value and the value the file declares."
       },
+      "FinalBody": {
+        "properties": {
+          "acknowledgements": {
+            "items": {
+              "$ref": "#/components/schemas/AcknowledgementItem"
+            },
+            "type": "array",
+            "title": "Acknowledgements",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "FinalBody",
+        "description": "Optional acknowledgements of a revision's open issues when marking it final; none are required (policy 05 rule 26.2)."
+      },
+      "FinalMark": {
+        "properties": {
+          "revision_id": {
+            "type": "string",
+            "title": "Revision Id"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "marked_by": {
+            "type": "string",
+            "title": "Marked By"
+          },
+          "marked_at": {
+            "type": "string",
+            "title": "Marked At"
+          },
+          "open_issues": {
+            "type": "integer",
+            "title": "Open Issues"
+          },
+          "acknowledgements": {
+            "items": {
+              "$ref": "#/components/schemas/Acknowledgement"
+            },
+            "type": "array",
+            "title": "Acknowledgements"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision_id",
+          "as_of",
+          "marked_by",
+          "marked_at",
+          "open_issues",
+          "acknowledgements"
+        ],
+        "title": "FinalMark",
+        "description": "A revision marked final for its `as_of` (policy 05 rule 26), with how many open issues it has and those the admin acknowledged."
+      },
       "FxRate": {
         "properties": {
           "currency": {
@@ -9791,6 +10785,8 @@
               "daily",
               "stale",
               "latest",
+              "peg",
+              "first_available",
               "venue_mark",
               "underlying",
               "gap"
@@ -9976,22 +10972,6 @@
               }
             ],
             "title": "Resource Id"
-          },
-          "margin_model": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "notional",
-                  "pnl_settled",
-                  "none"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Margin Model"
           },
           "unit": {
             "type": "string",
@@ -10243,6 +11223,25 @@
         ],
         "title": "ImportStatus",
         "description": "The state portfolio last copied from a resource."
+      },
+      "Issue": {
+        "properties": {
+          "issue": {
+            "type": "string",
+            "title": "Issue"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "issue",
+          "count"
+        ],
+        "title": "Issue",
+        "description": "One open issue of a revision."
       },
       "ItemCounts": {
         "properties": {
@@ -10680,22 +11679,6 @@
             ],
             "title": "Resource Id"
           },
-          "margin_model": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "notional",
-                  "pnl_settled",
-                  "none"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Margin Model"
-          },
           "unit": {
             "type": "string",
             "const": "lighter",
@@ -10980,6 +11963,59 @@
         "title": "MergeInternalBody",
         "description": "Declare two records one internal movement: `withdrawal` leaves one account, `deposit` arrives in another (ids from `GET {P}/corrections/candidates`)."
       },
+      "NobleAccountCreate": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "account": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account"
+          },
+          "resource_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resource Id"
+          },
+          "unit": {
+            "type": "string",
+            "const": "noble",
+            "title": "Unit"
+          },
+          "address": {
+            "type": "string",
+            "pattern": "^noble1[02-9ac-hj-np-z]{38}$",
+            "title": "Address"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "label",
+          "unit",
+          "address"
+        ],
+        "title": "NobleAccountCreate",
+        "description": "A noble account (`noble1…`, units/noble rule 1): the dYdX app's withdrawals and deposits pass through the owner's, the same key as their dYdX address."
+      },
       "OpenItem": {
         "properties": {
           "id": {
@@ -11118,6 +12154,17 @@
             "title": "Cost Method",
             "default": "fifo"
           },
+          "perp_cost_method": {
+            "type": "string",
+            "enum": [
+              "average",
+              "fifo",
+              "lifo",
+              "hifo"
+            ],
+            "title": "Perp Cost Method",
+            "default": "average"
+          },
           "lot_scope": {
             "type": "string",
             "enum": [
@@ -11193,15 +12240,6 @@
             "title": "Liability Valuation",
             "default": "cost"
           },
-          "loan_interest": {
-            "type": "string",
-            "enum": [
-              "accrued",
-              "paid"
-            ],
-            "title": "Loan Interest",
-            "default": "accrued"
-          },
           "audit_value_allowance": {
             "anyOf": [
               {
@@ -11242,49 +12280,29 @@
             "title": "Claim Disposal",
             "default": "realize"
           },
-          "position_allocations": {
-            "additionalProperties": {
-              "additionalProperties": {
-                "anyOf": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "string",
-                    "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
-                  }
-                ]
-              },
-              "type": "object"
-            },
-            "type": "object",
-            "title": "Position Allocations",
-            "default": {}
-          },
-          "operation_values": {
-            "additionalProperties": {
-              "anyOf": [
-                {
-                  "type": "number"
-                },
-                {
-                  "type": "string",
-                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
-                }
-              ]
-            },
-            "type": "object",
-            "title": "Operation Values",
-            "default": {}
-          },
           "unsolicited": {
             "type": "string",
             "enum": [
               "ignore",
-              "income"
+              "income",
+              "zero_cost"
             ],
             "title": "Unsolicited",
             "default": "ignore"
+          },
+          "unsolicited_dust": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Unsolicited Dust",
+            "default": "1"
           },
           "accrual": {
             "type": "string",
@@ -11309,7 +12327,7 @@
         "additionalProperties": false,
         "type": "object",
         "title": "Policy",
-        "description": "Accounting policy handed to the engine plus portfolio-level valuation policy."
+        "description": "Accounting policy handed to the engine plus portfolio-level valuation policy; unknown keys are rejected."
       },
       "PortfolioBudget": {
         "properties": {
@@ -11357,6 +12375,7 @@
             "default": {
               "functional_currency": "usd",
               "cost_method": "fifo",
+              "perp_cost_method": "average",
               "lot_scope": "global",
               "price_time": "trade_time",
               "fiat": [
@@ -11367,14 +12386,12 @@
               "fee_treatment": "expense",
               "minor_unit": 2,
               "liability_valuation": "cost",
-              "loan_interest": "accrued",
               "audit_value_allowance": "0",
               "position_entry": "carry",
               "withdrawal_recognition": "receipt",
               "claim_disposal": "realize",
-              "position_allocations": {},
-              "operation_values": {},
               "unsolicited": "ignore",
+              "unsolicited_dust": "1",
               "accrual": "monthly",
               "accrual_dates": []
             }
@@ -11802,6 +12819,8 @@
               "daily",
               "stale",
               "latest",
+              "peg",
+              "first_available",
               "venue_mark",
               "underlying",
               "gap"
@@ -12078,6 +13097,8 @@
               "daily",
               "stale",
               "latest",
+              "peg",
+              "first_available",
               "venue_mark",
               "underlying",
               "gap"
@@ -12207,7 +13228,8 @@
               "dydx",
               "evm",
               "hl",
-              "lighter"
+              "lighter",
+              "noble"
             ],
             "title": "Unit"
           },
@@ -12254,7 +13276,8 @@
               "dydx",
               "evm",
               "hl",
-              "lighter"
+              "lighter",
+              "noble"
             ],
             "title": "Unit"
           },
@@ -12494,6 +13517,82 @@
             "type": "string",
             "title": "Revision Id"
           },
+          "status": {
+            "type": "string",
+            "enum": [
+              "final",
+              "draft",
+              "stale"
+            ],
+            "title": "Status"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy"
+          },
+          "complete": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Complete"
+          },
+          "verification": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification"
+          },
+          "final": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FinalMark"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "sealed_at": {
             "type": "string",
             "title": "Sealed At"
@@ -12535,6 +13634,13 @@
             "type": "integer",
             "title": "Files"
           },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
           "summary": {
             "additionalProperties": {
               "$ref": "#/components/schemas/JsonValue"
@@ -12553,17 +13659,25 @@
         "type": "object",
         "required": [
           "revision_id",
+          "status",
+          "stale",
+          "as_of",
+          "policy",
+          "complete",
+          "verification",
+          "final",
           "sealed_at",
           "sealed_by",
           "job",
           "active",
           "imports",
           "files",
+          "issues",
           "summary",
           "package_files"
         ],
         "title": "RevisionDetail",
-        "description": "A sealed revision with its books summary and package files."
+        "description": "A sealed revision with its books summary, its open issues and package files."
       },
       "RevisionFile": {
         "properties": {
@@ -12619,6 +13733,82 @@
             "type": "string",
             "title": "Revision Id"
           },
+          "status": {
+            "type": "string",
+            "enum": [
+              "final",
+              "draft",
+              "stale"
+            ],
+            "title": "Status"
+          },
+          "stale": {
+            "type": "boolean",
+            "title": "Stale"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "policy": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy"
+          },
+          "complete": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Complete"
+          },
+          "verification": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification"
+          },
+          "final": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FinalMark"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "sealed_at": {
             "type": "string",
             "title": "Sealed At"
@@ -12664,6 +13854,13 @@
         "type": "object",
         "required": [
           "revision_id",
+          "status",
+          "stale",
+          "as_of",
+          "policy",
+          "complete",
+          "verification",
+          "final",
           "sealed_at",
           "sealed_by",
           "job",
@@ -12764,6 +13961,60 @@
         "title": "RowLink",
         "description": "The link that makes a row one transfer (`GET {P}/links/{id}`)."
       },
+      "RowsPage": {
+        "properties": {
+          "revision_id": {
+            "type": "string",
+            "title": "Revision Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "disposals",
+              "income",
+              "holdings",
+              "liabilities",
+              "journal"
+            ],
+            "title": "Kind"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision_id",
+          "kind",
+          "total",
+          "rows",
+          "next_cursor"
+        ],
+        "title": "RowsPage",
+        "description": "One page of a revision's rows of one kind (policy 05 rule 36)."
+      },
       "SerializedRecord": {
         "properties": {
           "id": {
@@ -12810,6 +14061,40 @@
         ],
         "title": "SerializedRecord",
         "description": "A validated domain record serialized for API consumers."
+      },
+      "SeriesPage": {
+        "properties": {
+          "revision_id": {
+            "type": "string",
+            "title": "Revision Id"
+          },
+          "interval": {
+            "type": "string",
+            "enum": [
+              "day",
+              "month"
+            ],
+            "title": "Interval"
+          },
+          "points": {
+            "items": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/JsonValue"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision_id",
+          "interval",
+          "points"
+        ],
+        "title": "SeriesPage",
+        "description": "A revision's P&L series at one interval (policy 05 rule 39)."
       },
       "SettingEffect": {
         "properties": {
@@ -13452,6 +14737,103 @@
         ],
         "title": "Total",
         "description": "A value in the reporting currency with its split and counts (policy 02 interfaces Rule 2.2, policy 04 gap 4); `complete` is false whenever a gap was left out."
+      },
+      "TotalsPage": {
+        "properties": {
+          "revision_id": {
+            "type": "string",
+            "title": "Revision Id"
+          },
+          "interval": {
+            "type": "string",
+            "enum": [
+              "day",
+              "month"
+            ],
+            "title": "Interval"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/TotalsPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision_id",
+          "interval",
+          "points"
+        ],
+        "title": "TotalsPage",
+        "description": "A revision's series totals at one interval (policy 05 rule 36)."
+      },
+      "TotalsPoint": {
+        "properties": {
+          "at": {
+            "type": "string",
+            "title": "At"
+          },
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "net_assets": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Assets"
+          },
+          "contributions": {
+            "type": "string",
+            "title": "Contributions"
+          },
+          "total_pnl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Pnl"
+          },
+          "realized": {
+            "type": "string",
+            "title": "Realized"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "at",
+          "date",
+          "net_assets",
+          "contributions",
+          "total_pnl",
+          "realized",
+          "complete",
+          "missing"
+        ],
+        "title": "TotalsPoint",
+        "description": "The headline figures of one series point (policy 05 rule 36); decimals as text."
       },
       "UnitBudget": {
         "properties": {
