@@ -880,16 +880,17 @@
           {
             "path": [
               "policy",
-              "liability_valuation"
+              "atomic_groups"
             ],
             "type": "string",
             "repeated": false,
             "choices": [
-              "cost",
-              "market"
+              "instant",
+              "reference",
+              "none"
             ],
             "required": false,
-            "help": "Liability Valuation"
+            "help": "Atomic Groups"
           },
           {
             "path": [
@@ -1412,16 +1413,17 @@
           {
             "path": [
               "policy",
-              "liability_valuation"
+              "atomic_groups"
             ],
             "type": "string",
             "repeated": false,
             "choices": [
-              "cost",
-              "market"
+              "instant",
+              "reference",
+              "none"
             ],
             "required": false,
-            "help": "Liability Valuation"
+            "help": "Atomic Groups"
           },
           {
             "path": [
@@ -2356,7 +2358,7 @@
     },
     "POST /v1/portfolio/portfolios/{portfolio_id}/books": {
       "summary": "Books",
-      "help": "Queue a books run up to `as_of` (default: now): translate the ledger up to it, fetch the daily prices its events and its P&L series need from the price provider (every asset held and every open position's mark on each day end), validate the engine input, run the accounting engine over the series grid, audit, and seal the package (records, links, policy, coverage, corrections, prices, engine input and output with its rows and series, audit, and every cited evidence object fetched from its unit) as a new immutable revision (`GET {P}/books`). The result is the books summary with its `revision_id`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A books run already queued or running is returned instead. Needs `correct` (policy 05 rule 36).",
+      "help": "Queue a books run up to `as_of` (default: now): translate the ledger up to it, fetch the daily prices its events need from the price provider (never prices of holdings: the engine values nothing at market, policy 05 rule 1.5), validate the engine input, run the accounting engine, audit, and seal the package (records, links, policy, coverage, corrections, the prices the events used, engine input and output with its rows and open-lot rows, audit, and every cited evidence object fetched from its unit; no series and no valuation, rule 23.5) as a new immutable revision (`GET {P}/books`). The result is the books summary with its `revision_id`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A books run already queued or running is returned instead. Needs `correct` (policy 05 rule 36).",
       "query": [],
       "body": {
         "media": "application/json",
@@ -2414,7 +2416,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}": {
       "summary": "Revision",
-      "help": "One sealed revision: its listing fields, its books summary as sealed (records, links, translation, engine completeness and exceptions, open positions, realized P&L by account, compartment and instrument, flows, the series' totals, pricing, audit) and its package files with their SHA-256.",
+      "help": "One sealed revision: its listing fields, its books summary as sealed (records, links, translation, engine completeness and exceptions, open positions, realized P&L by account, compartment and instrument, flows, pricing, audit) and its package files with their SHA-256.",
       "query": [],
       "body": null,
       "job": false,
@@ -2422,7 +2424,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/rows": {
       "summary": "Rows",
-      "help": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings per lot key and liabilities at `as_of`, with cost, market value and unrealized P&L (null when not valued); the journal's double-entry lines; the movements with outside parties (policy 05 sub-ledger Rule 7): one row per boundary transfer leg (date, account, compartment, asset, quantity, direction, value, basis `market` or `carried`, cost and realized gain or loss when out, counterparty or untagged with its flag, note, reference, correction id, who tagged it, record id), untagged first, with `counterparties`: each one's transfers, value in and out and balance at `as_of`, the untagged first as their subtotal. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows (for `boundary`, before they carried its movements with outside parties).",
+      "help": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings (per lot key, with opaque positions and open perp positions) and liabilities: the open-lot rows at `as_of` (`kind`, `quantity`, remaining `cost`, a position's entry basis in `settles_in`; policy 05 term 14), each with its live `value`, `label`, `price_at` and `unrealized` P&L (value − remaining cost) joined on read at `as_of` (rule 39.12.2; null when not valued), `values` saying when they were computed, and `warning` when the books' total P&L at `as_of` differs from the live MTM P&L (rule 39.5.2); the journal's double-entry lines; the movements with outside parties (policy 05 sub-ledger Rule 7): one row per boundary transfer leg (date, account, compartment, asset, quantity, direction, value, basis `market` or `carried`, cost and realized gain or loss when out, counterparty or untagged with its flag, note, reference, correction id, who tagged it, record id), untagged first, with `counterparties`: each one's transfers, value in and out and balance at `as_of`, the untagged first as their subtotal. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows (for `boundary`, before they carried its movements with outside parties).",
       "query": [
         {
           "name": "kind",
@@ -2462,43 +2464,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/series": {
       "summary": "Series",
-      "help": "A revision's P&L series (policy 05 rule 39) at each interval end from `from` to `to`: cost basis, market value and unrealized P&L per holding (with its account under compartment lot scope), liabilities and open perpetual positions at market, cumulative realized P&L and flows by nature label, total P&L, net assets and net contributions, and `period` (realized P&L, flows and total P&L changed since the previous interval end). A point with an asset or mark the price source has no price for says so (`complete` false, `missing`); nothing is valued at zero. 409 `rows-unavailable` for a revision sealed before revisions carried a series.",
-      "query": [
-        {
-          "name": "interval",
-          "type": "string",
-          "repeated": false,
-          "choices": [
-            "day",
-            "month"
-          ],
-          "required": false,
-          "help": "Every UTC day end, or the last point of each month."
-        },
-        {
-          "name": "from",
-          "type": "string",
-          "repeated": false,
-          "choices": [],
-          "required": false,
-          "help": "The first instant served."
-        },
-        {
-          "name": "to",
-          "type": "string",
-          "repeated": false,
-          "choices": [],
-          "required": false,
-          "help": "The last instant served."
-        }
-      ],
-      "body": null,
-      "job": false,
-      "binary": false
-    },
-    "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/totals": {
-      "summary": "Totals",
-      "help": "The headline figures of a revision's P&L series (policy 05 rule 36) at each interval end from `from` to `to`, for charts: per point its instant and UTC `date`, total value (`net_assets`), net contributions, total P&L, realized P&L, and whether it is `complete`, with the assets not priced at it (`missing`). The same points as `…/series`, without holdings, positions or flows. `revision_id` may be `current`: the newest revision built under the portfolio's current policy (404 when there is none). 409 `rows-unavailable` for a revision sealed before revisions carried a series.",
+      "help": "A revision's realized series (policy 05 rules 36 and 39.7), computed on read from its sealed rows: at every UTC day end (or the last of each month) from its first booked row to its `as_of`, then `as_of`, its realized P&L, its income and expenses by nature label, and their total (realized P&L + income − expenses), each in the interval (`period`) and to its end (`cumulative`). It carries no value, cost or unrealized P&L: NAV and MTM P&L are the live `{P}/totals`, which with `revision` adds unrealized P&L over time. `revision_id` may be `current`. 409 `rows-unavailable` for a revision sealed without rows or without an `as_of`.",
       "query": [
         {
           "name": "interval",
@@ -2542,7 +2508,7 @@
     },
     "POST /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/replay": {
       "summary": "Replay",
-      "help": "Queue a replay of a sealed revision: verify every file of its package against the manifest and the records' evidence closure, check the pinned engine is the installed one, rebuild the engine input from the pinned records, links and policy, run the engine again, and check its rows and series files. No unit or provider is called and nothing changes. The result says whether the books `matched` and how many files were verified. A replay of the same revision already queued or running is returned instead. Needs `read` (policy 05 rule 36: a check that changes nothing).",
+      "help": "Queue a replay of a sealed revision: verify every file of its package against the manifest and the records' evidence closure, check the pinned engine is the installed one, rebuild the engine input from the pinned records, links and policy, run the engine again, and check its rows files. No unit or provider is called and nothing changes. The result says whether the books `matched` and how many files were verified. A replay of the same revision already queued or running is returned instead. Needs `read` (policy 05 rule 36: a check that changes nothing).",
       "query": [],
       "body": null,
       "job": true,
@@ -2564,6 +2530,86 @@
       "summary": "Unmark",
       "help": "Unmark a final revision: its `as_of` has no final books until another is marked. 404 when it is not final. Needs `admin`.",
       "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/totals": {
+      "summary": "Totals",
+      "help": "The live layer's headline figures (policy 05 rules 36 and 39.1), without books: at every UTC day end (or the last of each month) from `from` to `to`, live NAV (holdings and opaque compartments valued, net of liabilities, plus open positions' unrealized P&L at the mark), net contributions (boundary transfers at their market value) and MTM P&L = NAV − contributions, each point `complete` or listing the assets not valued (`missing`; never valued at zero). With `revision`, each point it covers adds its realized results to date (`realized`: realized P&L + income − expenses) and `unrealized` = MTM P&L − realized (rule 39.12.1), its `as_of` is a point too, and `warning` states why the books' total P&L at `as_of` (realized + per-holding unrealized) differs from the live MTM P&L, by cause (rule 39.5.2); it is never folded into unrealized P&L. Values are computed when read and may change with prices or valuation rules (`computed_at`). 404 for an unknown revision (or none under the current policy for `current`); 409 `rows-unavailable` for one sealed without rows.",
+      "query": [
+        {
+          "name": "interval",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "day",
+            "month"
+          ],
+          "required": false,
+          "help": "Every UTC day end, or the last day end of each month."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The first instant served."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The last instant served."
+        },
+        {
+          "name": "revision",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A books revision (`current`: the newest built under the current policy) to join: its realized results and unrealized P&L for the instants it covers, and the warning at its `as_of`."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/series": {
+      "summary": "Series",
+      "help": "The live layer per account, compartment and asset (policy 05 rule 39.2), without books: at every UTC day end (or the last of each month) from `from` to `to`, each holding, liability (negative), open perp position (its unrealized P&L at the mark) and opaque compartment (one position valued from its event-implied contents, at least zero) with its quantity, value in the reporting currency and one valuation label (`market`, `stale`, `peg`, `first_available`, `components`, `components_stale`, `opaque_estimate`; none when not valued), and the point's NAV, net contributions, MTM P&L and completeness. Narrow it with `from`, `to` and `interval`: a year of daily points is large.",
+      "query": [
+        {
+          "name": "interval",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "day",
+            "month"
+          ],
+          "required": false,
+          "help": "Every UTC day end, or the last day end of each month."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The first instant served."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The last instant served."
+        }
+      ],
       "body": null,
       "job": false,
       "binary": false
