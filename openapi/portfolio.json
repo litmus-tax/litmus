@@ -11,7 +11,7 @@
           "portfolios"
         ],
         "summary": "Portfolios",
-        "description": "One page of the tenant's portfolios by id, with their display names (only those in a `resources` claim, when the token has one).",
+        "description": "One page of the tenant's portfolios by id (only those in a `resources` claim, when the token has one), each with its display name and headline (policy 02 interfaces Rule 2.6): active and archived account counts, its newest sync job, and the open-item count and value a job stored when it last derived the portfolio's reads (`null` until one has; `value` is the net value in the reporting currency with `complete` and `valued_at`). Nothing is derived or valued on this read; `{P}/overview` and `{P}/valuation` are the current figures.",
         "operationId": "portfolios_v1_portfolio_portfolios_get",
         "security": [
           {
@@ -755,7 +755,7 @@
           "portfolios"
         ],
         "summary": "Accounts",
-        "description": "One page of the accounts by id, with their label, archive time, resources, import status, source verification and coverage.",
+        "description": "One page of the accounts by id, with their label, archive time, resources, import status, source verification and coverage, and each one's `pnl` from the live books (policy 05 rule 44.4, decision 34): its live MTM P&L (`pnl`, its NAV now less its net transfers in, internal ones included, at market: `nav`, `contributions`) with its booked realized P&L, income and expenses as components and the rest `unrealized`, `pooled` under the `global` lot scope; null before the live books are computed.",
         "operationId": "accounts_v1_portfolio_portfolios__portfolio_id__accounts_get",
         "security": [
           {
@@ -945,7 +945,7 @@
           "portfolios"
         ],
         "summary": "Account New",
-        "description": "Add an account (and hl sub-accounts), binding or creating its unit resources: one per confirmed network for evm (or per active network when none are given), one otherwise. Never syncs.",
+        "description": "Add an account (and hl sub-accounts) with new unit resources: one per confirmed network for evm (or per active network when none are given), one otherwise. An existing resource is bound only when `resource_id` names it (for an evm account, `resources` names one per network), and one other accounts read only with `share: true` (else `409 resource-shared`; policy 04 Rule 13.7). Never syncs.",
         "operationId": "account_new_v1_portfolio_portfolios__portfolio_id__accounts_post",
         "security": [
           {
@@ -1790,7 +1790,7 @@
           "portfolios"
         ],
         "summary": "Budget",
-        "description": "Provider spend and next-sync estimates of every active account's resources (evm per network: Alchemy/dRPC this month; hl: the S3 archive over the resource's life), per account and in total. One read per unit, no provider call; `would_exceed` says a sync would pass a resource's limit, which its unit then refuses (a hard limit, policy 02 access Rule 7.2). The units are read with the caller's own credential.",
+        "description": "Every active account's budgets in one read (policy 02 interfaces Rule 10.7): per resource its tenant budget (`limit`: `limit_usd`, the `period` it covers, `spent_usd` in that period, `remaining_usd`), and provider spend against the operator's caps and next-sync estimates (evm per network: Alchemy/dRPC this month; hl: the S3 archive over the resource's life), per account and in total. One read per unit, no provider call; `would_exceed` says a sync would pass a resource's limit, which its unit then refuses (a hard limit, policy 02 access Rule 7.2). The units are read with the caller's own credential.",
         "operationId": "budget_v1_portfolio_portfolios__portfolio_id__budget_get",
         "security": [
           {
@@ -1933,7 +1933,7 @@
           "portfolios"
         ],
         "summary": "Account Budget Show",
-        "description": "The account's resources with their units' budget reads (`spend`, `estimate`, `would_exceed`) and the total; cex and dydx resources have none. A unit that cannot answer leaves an `error` on its resources; the units are read with the caller's own credential.",
+        "description": "The account's resources with their tenant budgets (`limit`) and their units' usage reads (`spend` against the operator's caps, `estimate`, `would_exceed`), and the total; cex and dydx resources have none. A unit that cannot answer leaves an `error` on its resources; the units are read with the caller's own credential.",
         "operationId": "account_budget_show_v1_portfolio_portfolios__portfolio_id__accounts__account__budget_get",
         "security": [
           {
@@ -3091,7 +3091,7 @@
           "reads"
         ],
         "summary": "Overview",
-        "description": "The portfolio at a glance, in one call: every account with its unit resources (each with the version, state digest, record count and time of its last import, and that import's verification summary `{status, verified_at, failed}` in policy 03 contract rule 2.6.1's shape), its open items counted by kind, its resources counted by verification status (`none`: without one), and its newest sync job; then the same counts for the whole portfolio, and its newest sync job.\n\nNo unit is called: each verification is the one the resource's last import copied, which describes the imported version or an earlier one. A resource's live state is its unit's `GET /resources/{r}`. Open items are those of `GET {P}/items`; an item concerning several accounts counts once in each, and once in the portfolio's counts.",
+        "description": "The portfolio at a glance, in one call: every account with its unit resources (each with the version, state digest, record count and time of its last import, and that import's verification summary `{status, verified_at, failed}` in policy 03 contract rule 2.6.1's shape), its open items counted by kind, its resources counted by verification status (`none`: without one), and its newest sync job; then the same counts for the whole portfolio, and its newest sync job.\n\nNo unit is called: each verification is the one the resource's last import copied, which describes the imported version or an earlier one. A resource's live state is its unit's `GET /resources/{r}`. Open items are those of `GET {P}/items`; an item concerning several accounts counts once in each, and once in the portfolio's counts. `pnl` is the portfolio's P&L now (its live MTM P&L, with NAV and net contributions) and its breakdown from the live books (policy 05 rule 43): realized P&L, income and expenses by label, unrealized P&L (live value − remaining cost, valued now) and `not_in_books` with its named `causes`, adding up to P&L; with its basis and `updating`; null before the live books are computed (a live job is queued).",
         "operationId": "overview_v1_portfolio_portfolios__portfolio_id__overview_get",
         "security": [
           {
@@ -5909,7 +5909,7 @@
           "ledger"
         ],
         "summary": "History Rows",
-        "description": "One page of the portfolio's history, one row per economic event: a record alone (`event`), or a withdrawal and a deposit portfolio linked as one `transfer` row with both records (withdrawal first), the link, and the residual (the fee or loss in transit) when both move one asset. Each record carries its account, time, legs, the on-chain `reference`, its unit resource and evidence digests to open at the unit. A transfer leg without a counterpart is `unmatched` (see `GET {P}/unmatched`). A transfer row appears once, where its first record passing the filters falls, so filtering by one account still shows the other account's side.",
+        "description": "One page of the portfolio's history, one row per transaction (policy 02 interfaces Rule 2.4.1): a linked withdrawal and deposit as one `transfer` row with both records (withdrawal first), the link and the residual (the fee or loss in transit) when both move one asset; else the records of one account's transaction (`event`, its records sharing a `tx_id`). The records paying the transaction's network fee are the row's `fee` (records, legs per asset, value), a row of their own (`fee`) only when their transaction moved nothing else. Each row carries its `value` in the reporting currency (`currency`) at the daily prices of its UTC day, `complete` false with the unpriced assets when a leg has none; the counterparty a boundary tag in force names on one of its records; and whether a transfer leg is `unmatched` (see `GET {P}/unmatched`). Each record carries its account, time, legs, the on-chain `reference`, its unit resource and evidence digests to open at the unit. A row appears once, where its first record passing the filters falls, so filtering by one account still shows the other account's side; a fee's records match the filters only on a row of their own. `total` counts the rows matching the filters and `facets` the rows each account, type and asset would match with the other filters, the same on every page.",
         "operationId": "history_rows_v1_portfolio_portfolios__portfolio_id__history_get",
         "security": [
           {
@@ -6359,7 +6359,7 @@
           "books"
         ],
         "summary": "Books",
-        "description": "Queue a books run up to `as_of` (default: now): translate the ledger up to it, fetch the daily prices its events need from the price provider (never prices of holdings: the engine values nothing at market, policy 05 rule 1.5), validate the engine input, run the accounting engine, audit, and seal the package (records, links, policy, coverage, corrections, the prices the events used, engine input and output with its rows and open-lot rows, audit, and every cited evidence object fetched from its unit; no series and no valuation, rule 23.5) as a new immutable revision (`GET {P}/books`). The result is the books summary with its `revision_id`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A books run already queued or running is returned instead. Needs `correct` (policy 05 rule 36).",
+        "description": "Seal the books at `as_of` (default: the end of the latest import) for a `reason` (policy 05 rule 37.2): `export`, `final` (needs `admin`; the revision is then marked final, rule 37.3) or `snapshot`. Nothing seals automatically. When a revision under the current policy with the same `as_of` and input digest exists, it is reused: answered at once (200, `reused`) when the live books at that `as_of` are cached and current, else found by the seal job once it has translated and priced, before it runs anything else. Otherwise the job translates the ledger up to `as_of`, fetches the daily prices its events need (never prices of holdings, rule 1.5), validates, runs the engine, audits, and seals the package (records, links, policy, coverage, corrections, the prices the events used, engine input and output with its rows and open-lot rows, audit, and every cited evidence object fetched from its unit; no series and no valuation, rule 23.5) as a new immutable revision recording its reason and input digest; its progress names each step, packaging and storing included. The result is the books summary with its `revision_id`, `reason` and `reused`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A seal at the same `as_of` already queued or running is returned instead. Needs `correct` (`admin` for `final`).",
         "operationId": "books_v1_portfolio_portfolios__portfolio_id__books_post",
         "security": [
           {
@@ -6419,7 +6419,15 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JobAccepted"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Sealed"
+                    },
+                    {
+                      "$ref": "#/components/schemas/JobAccepted"
+                    }
+                  ],
+                  "title": "Response Books V1 Portfolio Portfolios  Portfolio Id  Books Post"
                 }
               }
             }
@@ -6528,6 +6536,16 @@
               }
             },
             "description": "Bad Gateway"
+          },
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sealed"
+                }
+              }
+            },
+            "description": "OK"
           }
         }
       },
@@ -6704,6 +6722,186 @@
         }
       }
     },
+    "/v1/portfolio/portfolios/{portfolio_id}/books/live": {
+      "get": {
+        "tags": [
+          "books"
+        ],
+        "summary": "Live",
+        "description": "The live books' state (policy 05 term 18, rule 36): the portfolio's books computed in memory from its current inputs under its current policy, whenever an input changes, and never sealed. It says their `as_of` (the end of the latest import, or the instant asked for), input digest, when they were computed, whether they are `updating` (their inputs changed since: a live job is computing them again, and every read serves these meanwhile), their completeness, open issues, warnings and audit. They are labelled `live`, never books, draft or final. Their rows are `GET {P}/books/live/rows?kind=`, their realized series `GET {P}/books/live/series`, and every accounting read takes `revision=live` by default. 202 with the live job that computes them when none are computed at that `as_of` yet; seal them with `POST {P}/books`. Needs `read`.",
+        "operationId": "live_v1_portfolio_portfolios__portfolio_id__books_live_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The books at this instant (Close & export's date, policy 05 rule 37.1.4); default: at the end of the latest import.",
+              "title": "As Of"
+            },
+            "description": "The books at this instant (Close & export's date, policy 05 rule 37.1.4); default: at the end of the latest import."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/LiveState"
+                    },
+                    {
+                      "$ref": "#/components/schemas/JobAccepted"
+                    }
+                  ],
+                  "title": "Response Live V1 Portfolio Portfolios  Portfolio Id  Books Live Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAccepted"
+                }
+              }
+            },
+            "description": "Accepted"
+          }
+        }
+      }
+    },
     "/v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}": {
       "get": {
         "tags": [
@@ -6862,7 +7060,7 @@
           "books"
         ],
         "summary": "Rows",
-        "description": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings (per lot key, with opaque positions and open perp positions) and liabilities: the open-lot rows at `as_of` (`kind`, `quantity`, remaining `cost`, a position's entry basis in `settles_in`; policy 05 term 14), each with its live `value`, `label`, `price_at` and `unrealized` P&L (value − remaining cost) joined on read at `as_of` (rule 39.12.2; null when not valued), `values` saying when they were computed, and `warning` when the books' total P&L at `as_of` differs from the live MTM P&L (rule 39.5.2); the journal's double-entry lines; the movements with outside parties (policy 05 sub-ledger Rule 7): one row per boundary transfer leg (date, account, compartment, asset, quantity, direction, value, basis `market` or `carried`, cost and realized gain or loss when out, counterparty or untagged with its flag, note, reference, correction id, who tagged it, record id), untagged first, with `counterparties`: each one's transfers, value in and out and balance at `as_of`, the untagged first as their subtotal. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows (for `boundary`, before they carried its movements with outside parties).",
+        "description": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings (per lot key, with opaque positions and open perp positions) and liabilities: the open-lot rows at `as_of` (`kind`, `quantity`, remaining `cost`, a position's entry basis in `settles_in`; policy 05 term 14), each with its live `value`, `label`, `price_at` and `unrealized` P&L (value − remaining cost) joined on read at `as_of` (rule 39.12.2; null when not valued), `values` saying when they were computed, and `warning` when the books' total P&L at `as_of` differs from the live MTM P&L (rule 39.5.2); the journal's double-entry lines; the movements with outside parties (policy 05 sub-ledger Rule 7): one row per boundary transfer leg (date, account, compartment, asset, quantity, direction, value, basis `market` or `carried`, cost and realized gain or loss when out, counterparty or untagged with its flag, note, reference, correction id, who tagged it, record id), untagged first, with `counterparties`: each one's transfers, value in and out and balance at `as_of`, the untagged first as their subtotal. Decimals are text; every row but a journal line has its `account`. `revision_id` may be `live`: the live books' rows (policy 05 term 18; 409 `live-books-missing` before they are computed, and a live job is queued when they are missing or behind). 409 `rows-unavailable` for a revision sealed before revisions carried rows (for `boundary`, before they carried its movements with outside parties).",
         "operationId": "rows_v1_portfolio_portfolios__portfolio_id__books__revision_id__rows_get",
         "security": [
           {
@@ -7064,7 +7262,7 @@
           "books"
         ],
         "summary": "Series",
-        "description": "A revision's realized series (policy 05 rules 36 and 39.7), computed on read from its sealed rows: at every UTC day end (or the last of each month) from its first booked row to its `as_of`, then `as_of`, its realized P&L, its income and expenses by nature label, and their total (realized P&L + income − expenses), each in the interval (`period`) and to its end (`cumulative`). It carries no value, cost or unrealized P&L: NAV and MTM P&L are the live `{P}/totals`, which with `revision` adds unrealized P&L over time. `revision_id` may be `current`. 409 `rows-unavailable` for a revision sealed without rows or without an `as_of`.",
+        "description": "A revision's realized series (policy 05 rules 36 and 39.7), computed on read from its sealed rows: at every UTC day end (or the last of each month) from its first booked row to its `as_of`, then `as_of`, its realized P&L, its income and expenses by nature label, and their total (realized P&L + income − expenses), each in the interval (`period`) and to its end (`cumulative`). It carries no value, cost or unrealized P&L: NAV and MTM P&L are the live `{P}/totals`, which with `revision` adds unrealized P&L over time. `revision_id` may be `current`, or `live` for the live books (policy 05 term 18; their realized amounts per UTC day). 409 `rows-unavailable` for a revision sealed without rows or without an `as_of`.",
         "operationId": "series_v1_portfolio_portfolios__portfolio_id__books__revision_id__series_get",
         "security": [
           {
@@ -7270,7 +7468,7 @@
           "books"
         ],
         "summary": "Export",
-        "description": "The sealed package of a revision as a zip file: every artifact at its package path, each verified against its hash when read. `manifest.json` lists the files with their SHA-256; unzip it and run a replay offline, or `POST …/replay` to replay it here.",
+        "description": "A sealed revision's export (policy 05 rule 31). `package`: the sealed package as a zip file, every artifact at its package path, each verified against its hash when read; `manifest.json` lists the files with their SHA-256; unzip it and run a replay offline, or `POST …/replay` to replay it here. `summary` (rule 31.5): the accountant's summary, one XLSX workbook dated in the portfolio's time zone: Summary (the header of rule 32.1, NAV at the period's start and end, net contributions, P&L and its breakdown), P&L by month and account, P&L by asset, Balance at cost (open-lot rows at `as_of` with market value and unrealized P&L when exported), Journal entries by month and account, Disposals, Income and expenses, and Open issues and notes. `live` is a 409: seal first (`POST {P}/books {reason: export}`).",
         "operationId": "export_v1_portfolio_portfolios__portfolio_id__books__revision_id__export_get",
         "security": [
           {
@@ -7295,13 +7493,68 @@
               "type": "string",
               "title": "Revision Id"
             }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "package",
+                "summary"
+              ],
+              "type": "string",
+              "description": "`package` (the sealed package as a zip) or `summary` (the accountant's summary, an XLSX workbook).",
+              "default": "package",
+              "title": "Format"
+            },
+            "description": "`package` (the sealed package as a zip) or `summary` (the accountant's summary, an XLSX workbook)."
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`summary`: the period's first instant; default: after the newest earlier final revision, else the first record.",
+              "title": "From"
+            },
+            "description": "`summary`: the period's first instant; default: after the newest earlier final revision, else the first record."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`summary`: the period's last instant; default: `as_of`.",
+              "title": "To"
+            },
+            "description": "`summary`: the period's last instant; default: `as_of`."
           }
         ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
-              "application/zip": {}
+              "application/zip": {},
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {}
             }
           },
           "401": {
@@ -7894,7 +8147,7 @@
           "live"
         ],
         "summary": "Totals",
-        "description": "The live layer's headline figures (policy 05 rules 36 and 39.1), without books: at every UTC day end (or the last of each month) from `from` to `to`, live NAV (holdings and opaque compartments valued, net of liabilities, plus open positions' unrealized P&L at the mark), net contributions (boundary transfers at their market value) and MTM P&L = NAV − contributions, each point `complete` or listing the assets not valued (`missing`; never valued at zero). With `revision`, each point it covers adds its realized results to date (`realized`: realized P&L + income − expenses) and `unrealized` = MTM P&L − realized (rule 39.12.1), its `as_of` is a point too, and `warning` states why the books' total P&L at `as_of` (realized + per-holding unrealized) differs from the live MTM P&L, by cause (rule 39.5.2); it is never folded into unrealized P&L. Values are computed when read and may change with prices or valuation rules (`computed_at`). 404 for an unknown revision (or none under the current policy for `current`); 409 `rows-unavailable` for one sealed without rows.",
+        "description": "The live layer's headline figures (policy 05 rules 36 and 39.1), without books: at every UTC day end (or the last of each month) from `from` to `to`, live NAV (holdings and opaque compartments valued, net of liabilities, plus open positions' unrealized P&L at the mark), net contributions (boundary transfers at their market value) and MTM P&L = NAV − contributions, each point `complete` or listing the assets not valued (`missing`; never valued at zero). Joined with the live books by default (`revision=live`, rule 36; a sealed revision when named), each point they cover adds its realized results to date (`realized`: realized P&L + income − expenses) and `unrealized` = MTM P&L − realized (rule 39.12.1): the live books cover every point, since nothing after the latest import is known, and are valued at the time of reading (decision 33); a sealed revision covers the points up to its `as_of`, which is a point too. `revision` states the basis (rule 34): its id, `as_of`, policy, `valued_at`, and for the live books `updating` (a live job is computing them again) or `computed: false` (not computed yet: no point carries realized results, and a live job is queued). `warning` states why the books' total P&L at `as_of` (realized + per-holding unrealized) differs from the live MTM P&L, by cause (rule 39.5.2); it is never folded into unrealized P&L. Values are computed when read and may change with prices or valuation rules (`computed_at`). 404 for an unknown revision (or none under the current policy for `current`); 409 `rows-unavailable` for one sealed without rows.",
         "operationId": "totals_v1_portfolio_portfolios__portfolio_id__totals_get",
         "security": [
           {
@@ -7970,18 +8223,12 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "A books revision (`current`: the newest built under the current policy) to join: its realized results and unrealized P&L for the instants it covers, and the warning at its `as_of`.",
+              "type": "string",
+              "description": "The books to join: `live` (the default: the live books, policy 05 term 18), a sealed revision, or `current` (the newest sealed under the current policy); their realized results and unrealized P&L for the instants they cover, and the warning at their `as_of`.",
+              "default": "live",
               "title": "Revision"
             },
-            "description": "A books revision (`current`: the newest built under the current policy) to join: its realized results and unrealized P&L for the instants it covers, and the warning at its `as_of`."
+            "description": "The books to join: `live` (the default: the live books, policy 05 term 18), a sealed revision, or `current` (the newest sealed under the current policy); their realized results and unrealized P&L for the instants they cover, and the warning at their `as_of`."
           }
         ],
         "responses": {
@@ -8300,13 +8547,223 @@
         }
       }
     },
+    "/v1/portfolio/portfolios/{portfolio_id}/pnl": {
+      "get": {
+        "tags": [
+          "live"
+        ],
+        "summary": "Profit And Loss",
+        "description": "P&L by asset, account, month or year (policy 05 rules 36, 43.2 and 44.5), from the live books by default (or a sealed revision), with the portfolio's `total`: P&L now and its breakdown, whose lines add up to it. Each group carries realized P&L, income and expenses (with `flows` by label), unrealized P&L, `not_in_books` and P&L. An asset group adds the remaining `cost` of its holdings, valued now for the live books (decision 33). An account group's P&L is its live MTM P&L (`nav` − `contributions`), its booked figures components and the rest unrealized, `pooled` under the `global` lot scope (decision 34). A month or year group is dated in the portfolio's `time_zone`; its P&L is the MTM P&L at its end less at its start, its booked figures those of the period and its unrealized P&L the change over it. `from` and `to` narrow the booked figures to those days. `basis` states the books and when holdings are valued (rule 34). 409 `live-books-missing` before the live books are computed (a live job is queued). Needs `read`.",
+        "operationId": "profit_and_loss_v1_portfolio_portfolios__portfolio_id__pnl_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "portfolio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "by",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "asset",
+                "account",
+                "month",
+                "year"
+              ],
+              "type": "string",
+              "description": "`asset`, `account`, or `month` / `year` in the portfolio time zone.",
+              "title": "By"
+            },
+            "description": "`asset`, `account`, or `month` / `year` in the portfolio time zone."
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The first instant served.",
+              "title": "From"
+            },
+            "description": "The first instant served."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The last instant served.",
+              "title": "To"
+            },
+            "description": "The last instant served."
+          },
+          {
+            "name": "revision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "The books: `live` (the default, the live books) or a sealed revision.",
+              "default": "live",
+              "title": "Revision"
+            },
+            "description": "The books: `live` (the default, the live books) or a sealed revision."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PnlPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "502": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        }
+      }
+    },
     "/v1/portfolio/portfolios/{portfolio_id}/sync": {
       "post": {
         "tags": [
           "jobs"
         ],
         "summary": "Sync",
-        "description": "Queue a sync of the given accounts, else of every active one (archived accounts never sync): per resource a unit sync (a child job), then the import; a sync already queued or running for the portfolio is returned instead. The job's `accounts` are fixed now (every active account, for a sync of all).\n\nAn account still mapped by its resource's id from before its unit (dydx, evm, hl) assigned UUIDs is resolved by name first, with the request's credential, and its UUID recorded (policy 03 contract gap 26). A budget is a hard limit (policy 02 access Rule 7.2): a resource its unit refuses over its budget is listed under the result's `over_budget`, and nothing passes it.\n\nA person's sync holds one job token for the units and resources it calls, requested now from their session (403 `grant-refused` when platform refuses it, 502 `grant-failed` when it cannot answer) and revoked when the job ends or is cancelled. A sync started with an API key calls the units with that key: 403 `key-audience-missing` when its audience lacks one of them.",
+        "description": "Queue a sync of the given accounts, else of every active one (archived accounts never sync): per resource a unit sync (a child job), then the import, then a reconcile of the whole portfolio (policy 01 portfolio Rule 10; its summary, or its error, is the result's `reconcile`); a sync already queued or running for the portfolio is returned instead. The job's `accounts` are fixed now (every active account, for a sync of all).\n\nAn account still mapped by its resource's id from before its unit (dydx, evm, hl) assigned UUIDs is resolved by name first, with the request's credential, and its UUID recorded (policy 03 contract gap 26). A budget is a hard limit (policy 02 access Rule 7.2): a resource its unit refuses over its budget is listed under the result's `over_budget`, and nothing passes it.\n\nA person's sync holds one job token for the units and resources it calls, requested now from their session (403 `grant-refused` when platform refuses it, 502 `grant-failed` when it cannot answer) and revoked when the job ends or is cancelled. A sync started with an API key calls the units with that key: 403 `key-audience-missing` when its audience lacks one of them.",
         "operationId": "sync_v1_portfolio_portfolios__portfolio_id__sync_post",
         "security": [
           {
@@ -8847,7 +9304,7 @@
           "jobs"
         ],
         "summary": "Jobs",
-        "description": "One page of the tenant's portfolio jobs, newest first, each with its accounts, latest progress message and children. `?portfolio=P&account=a&status=queued,running` finds an account's active sync.",
+        "description": "One page of the tenant's portfolio jobs, newest first, each with its accounts, latest progress message, children (each with its latest step) and `dry_run` mark. `?portfolio=P&account=a&status=queued,running` finds an account's active sync; `?kind=books&status=succeeded` the last books run (policy 02 interfaces Rule 15).",
         "operationId": "jobs_v1_portfolio_jobs_get",
         "security": [
           {
@@ -8893,6 +9350,27 @@
               "title": "Status"
             },
             "description": "Only jobs in these statuses: repeatable or comma-separated (`queued,running`)."
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only jobs of these kinds: repeatable or comma-separated (`sync,books`).",
+              "title": "Kind"
+            },
+            "description": "Only jobs of these kinds: repeatable or comma-separated (`sync,books`)."
           },
           {
             "name": "account",
@@ -9069,7 +9547,7 @@
           "jobs"
         ],
         "summary": "Job",
-        "description": "One job with its complete progress, its unit child jobs, and its result or error once finished.",
+        "description": "One job with its complete progress, its unit child jobs (each with its latest step, times and record count), its `dry_run` mark, and its result or error once finished (policy 02 interfaces Rule 15).",
         "operationId": "job_v1_portfolio_jobs__job_id__get",
         "security": [
           {
@@ -9212,7 +9690,7 @@
           "jobs"
         ],
         "summary": "Cancel",
-        "description": "Cancel a queued or running job and revoke its job token; the worker cancels the unit job it waits for and imports nothing more.",
+        "description": "Cancel a queued or running job: its unfinished unit jobs are cancelled, its job token revoked, and nothing more is imported (accounts imported before stay). The portfolio's next sync can start at once. 409 when the job already succeeded or failed.",
         "operationId": "cancel_v1_portfolio_jobs__job_id__cancel_post",
         "security": [
           {
@@ -9891,6 +10369,16 @@
                 "type": "null"
               }
             ]
+          },
+          "pnl": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PnlGroup"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -10460,6 +10948,11 @@
             ],
             "title": "Resource Id"
           },
+          "share": {
+            "type": "boolean",
+            "title": "Share",
+            "default": false
+          },
           "unit": {
             "type": "string",
             "const": "aster",
@@ -10558,6 +11051,13 @@
           "passed": {
             "type": "boolean",
             "title": "Passed"
+          },
+          "left_out": {
+            "items": {
+              "$ref": "#/components/schemas/LeftOut"
+            },
+            "type": "array",
+            "title": "Left Out"
           }
         },
         "type": "object",
@@ -10577,6 +11077,66 @@
         "title": "AuditReport",
         "description": "Everything `litmus audit` prints."
       },
+      "Basis": {
+        "properties": {
+          "revision_id": {
+            "type": "string",
+            "title": "Revision Id"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "valued_at": {
+            "type": "string",
+            "title": "Valued At"
+          },
+          "policy": {
+            "title": "Policy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision_id",
+          "as_of",
+          "valued_at",
+          "policy"
+        ],
+        "title": "Basis",
+        "description": "What the figures are from (policy 05 rule 34)."
+      },
+      "BooksAudit": {
+        "properties": {
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "state_errors": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "State Errors"
+          },
+          "state_failures": {
+            "type": "integer",
+            "title": "State Failures"
+          },
+          "state_unassessable": {
+            "type": "integer",
+            "title": "State Unassessable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "passed",
+          "state_errors",
+          "state_failures",
+          "state_unassessable"
+        ],
+        "title": "BooksAudit",
+        "description": "Summary of independent source and portfolio checks."
+      },
       "BooksRequestBody": {
         "properties": {
           "verified_only": {
@@ -10595,12 +11155,22 @@
               }
             ],
             "title": "As Of"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "export",
+              "final",
+              "snapshot"
+            ],
+            "title": "Reason",
+            "default": "snapshot"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "title": "BooksRequestBody",
-        "description": "What a books run books."
+        "description": "What a seal books, and why (policy 05 rule 37.2)."
       },
       "BooksWarning": {
         "properties": {
@@ -10651,6 +11221,81 @@
         ],
         "title": "BooksWarning",
         "description": "The books against the live layer at a revision's `as_of` (rule 39.5.2): never folded into unrealized P&L, never a booked figure."
+      },
+      "Breakdown": {
+        "properties": {
+          "pnl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pnl"
+          },
+          "realized": {
+            "type": "string",
+            "title": "Realized"
+          },
+          "income": {
+            "type": "string",
+            "title": "Income"
+          },
+          "expenses": {
+            "type": "string",
+            "title": "Expenses"
+          },
+          "flows": {
+            "items": {
+              "$ref": "#/components/schemas/Flow"
+            },
+            "type": "array",
+            "title": "Flows"
+          },
+          "unrealized": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unrealized"
+          },
+          "not_in_books": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Not In Books"
+          },
+          "causes": {
+            "items": {
+              "$ref": "#/components/schemas/WarningCause"
+            },
+            "type": "array",
+            "title": "Causes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pnl",
+          "realized",
+          "income",
+          "expenses",
+          "flows",
+          "unrealized",
+          "not_in_books"
+        ],
+        "title": "Breakdown",
+        "description": "P&L and its breakdown (policy 05 rule 43.2); decimals as text in the reporting currency."
       },
       "BudgetTotal": {
         "properties": {
@@ -10908,6 +11553,11 @@
               }
             ],
             "title": "Resource Id"
+          },
+          "share": {
+            "type": "boolean",
+            "title": "Share",
+            "default": false
           },
           "unit": {
             "type": "string",
@@ -11819,6 +12469,32 @@
         "title": "Deleted",
         "description": "What a deletion removed; unit resources and their revisions are never deleted."
       },
+      "DiscoveryProgress": {
+        "properties": {
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "complete",
+          "percent"
+        ],
+        "title": "DiscoveryProgress",
+        "description": "How much of a resource's history its discovery has covered, when the unit reports it (`detail.discovery.progress`, units/evm/index.md)."
+      },
       "DydxAccountCreate": {
         "properties": {
           "label": {
@@ -11850,6 +12526,11 @@
               }
             ],
             "title": "Resource Id"
+          },
+          "share": {
+            "type": "boolean",
+            "title": "Share",
+            "default": false
           },
           "unit": {
             "type": "string",
@@ -11922,6 +12603,11 @@
             ],
             "title": "Resource Id"
           },
+          "share": {
+            "type": "boolean",
+            "title": "Share",
+            "default": false
+          },
           "unit": {
             "type": "string",
             "const": "evm",
@@ -11946,6 +12632,15 @@
               }
             ],
             "title": "Networks"
+          },
+          "resources": {
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+            },
+            "type": "object",
+            "title": "Resources",
+            "default": {}
           }
         },
         "additionalProperties": false,
@@ -12028,6 +12723,70 @@
         "title": "ExcludedBalance",
         "description": "A balance listed apart from a compartment's balances (spam, possible spam), never valued."
       },
+      "Facets": {
+        "properties": {
+          "account": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Account"
+          },
+          "type": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Type"
+          },
+          "asset": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Asset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account",
+          "type",
+          "asset"
+        ],
+        "title": "Facets",
+        "description": "Per filter the route offers, the rows each value would match with the other filters and the time range (policy 02 interfaces Rule 2.4.1 item 5)."
+      },
+      "FeeLeg": {
+        "properties": {
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset",
+          "asset_id",
+          "amount"
+        ],
+        "title": "FeeLeg",
+        "description": "What a row's network fee cost in one asset (negative)."
+      },
       "FieldChange": {
         "properties": {
           "stored": {
@@ -12102,6 +12861,41 @@
         ],
         "title": "FinalMark",
         "description": "A revision marked final for its `as_of` (policy 05 rule 26), with how many open issues it has and those the admin acknowledged."
+      },
+      "Flow": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "income",
+              "expense"
+            ],
+            "title": "Kind"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "label",
+          "amount"
+        ],
+        "title": "Flow",
+        "description": "Income or expenses of one nature label (expenses positive)."
       },
       "FlowAmount": {
         "properties": {
@@ -12233,6 +13027,100 @@
         "title": "GapCounts",
         "description": "Distinct (asset, reason) gaps of the portfolio total, by reason."
       },
+      "Headline": {
+        "properties": {
+          "pnl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pnl"
+          },
+          "realized": {
+            "type": "string",
+            "title": "Realized"
+          },
+          "income": {
+            "type": "string",
+            "title": "Income"
+          },
+          "expenses": {
+            "type": "string",
+            "title": "Expenses"
+          },
+          "flows": {
+            "items": {
+              "$ref": "#/components/schemas/Flow"
+            },
+            "type": "array",
+            "title": "Flows"
+          },
+          "unrealized": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unrealized"
+          },
+          "not_in_books": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Not In Books"
+          },
+          "causes": {
+            "items": {
+              "$ref": "#/components/schemas/WarningCause"
+            },
+            "type": "array",
+            "title": "Causes"
+          },
+          "nav": {
+            "type": "string",
+            "title": "Nav"
+          },
+          "contributions": {
+            "type": "string",
+            "title": "Contributions"
+          },
+          "basis": {
+            "$ref": "#/components/schemas/Basis"
+          },
+          "updating": {
+            "type": "boolean",
+            "title": "Updating"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pnl",
+          "realized",
+          "income",
+          "expenses",
+          "flows",
+          "unrealized",
+          "not_in_books",
+          "nav",
+          "contributions",
+          "basis",
+          "updating"
+        ],
+        "title": "Headline",
+        "description": "P&L now with its breakdown and basis, as `{P}/overview` shows it (policy 05 rules 34 and 43)."
+      },
       "HistoryPage": {
         "properties": {
           "rows": {
@@ -12252,15 +13140,29 @@
               }
             ],
             "title": "Next Cursor"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "facets": {
+            "$ref": "#/components/schemas/Facets"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
           }
         },
         "type": "object",
         "required": [
           "rows",
-          "next_cursor"
+          "next_cursor",
+          "total",
+          "facets",
+          "currency"
         ],
         "title": "HistoryPage",
-        "description": "One page of history rows (policy 03 contract rule 15)."
+        "description": "One page of history rows (policy 03 contract rule 15), with the total and facets of its filters (the same on every page)."
       },
       "HistoryRow": {
         "properties": {
@@ -12276,7 +13178,8 @@
             "type": "string",
             "enum": [
               "event",
-              "transfer"
+              "transfer",
+              "fee"
             ],
             "title": "Kind"
           },
@@ -12286,6 +13189,16 @@
             },
             "type": "array",
             "title": "Records"
+          },
+          "fee": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RowFee"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "link": {
             "anyOf": [
@@ -12310,6 +13223,26 @@
           "unmatched": {
             "type": "boolean",
             "title": "Unmatched"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RowValue"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "counterparty": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RowCounterparty"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -12318,12 +13251,15 @@
           "time",
           "kind",
           "records",
+          "fee",
           "link",
           "residual",
-          "unmatched"
+          "unmatched",
+          "value",
+          "counterparty"
         ],
         "title": "HistoryRow",
-        "description": "One economic event: a record, or a linked transfer with both of its records."
+        "description": "One transaction: a record, the records one account's transaction made, or a linked transfer with both of its records."
       },
       "HlAccountCreate": {
         "properties": {
@@ -12356,6 +13292,11 @@
               }
             ],
             "title": "Resource Id"
+          },
+          "share": {
+            "type": "boolean",
+            "title": "Share",
+            "default": false
           },
           "unit": {
             "type": "string",
@@ -12649,6 +13590,57 @@
         "title": "ItemCounts",
         "description": "Open items (`GET {P}/items`) by kind."
       },
+      "ItemSubject": {
+        "properties": {
+          "record": {
+            "type": "string",
+            "title": "Record"
+          },
+          "record_kind": {
+            "type": "string",
+            "title": "Record Kind"
+          },
+          "record_type": {
+            "type": "string",
+            "title": "Record Type"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "account": {
+            "type": "string",
+            "title": "Account"
+          },
+          "tx": {
+            "type": "string",
+            "title": "Tx"
+          },
+          "network": {
+            "type": "string",
+            "title": "Network"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height"
+          },
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "native": {
+            "type": "string",
+            "title": "Native"
+          },
+          "day": {
+            "type": "string",
+            "title": "Day"
+          }
+        },
+        "type": "object",
+        "title": "ItemSubject",
+        "description": "What an open item is about, each field only where the item concerns it (policy 02 interfaces Rule 2.7.1)."
+      },
       "ItemsResult": {
         "properties": {
           "total": {
@@ -12725,9 +13717,14 @@
               "reconcile",
               "books",
               "replay",
-              "correct"
+              "correct",
+              "live"
             ],
             "title": "Kind"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run"
           },
           "resource_id": {
             "type": "string",
@@ -12813,6 +13810,7 @@
         "required": [
           "id",
           "kind",
+          "dry_run",
           "resource_id",
           "accounts",
           "status",
@@ -12888,6 +13886,50 @@
           },
           "error": {
             "$ref": "#/components/schemas/JobError"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "records": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records"
           }
         },
         "type": "object",
@@ -12895,10 +13937,14 @@
           "service",
           "id",
           "resource_id",
-          "status"
+          "status",
+          "step",
+          "started_at",
+          "finished_at",
+          "records"
         ],
         "title": "JobChild",
-        "description": "A unit job this job started and waits for (api.md §4.4), with its status as the job last read it (policy 04 gap 5)."
+        "description": "A unit job this job started and waits for (api.md §4.4), as the job last read it: what it is doing, so no client reads it from its unit (policy 02 interfaces Rule 15.1)."
       },
       "JobError": {
         "properties": {
@@ -13055,6 +14101,46 @@
         "description": "When the values joined with a revision's rows are from (policy 05 rules 34 and 39.12.3)."
       },
       "JsonValue": {},
+      "LeftOut": {
+        "properties": {
+          "account": {
+            "type": "string",
+            "title": "Account"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "left_out",
+              "older_import"
+            ],
+            "title": "Kind"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "job": {
+            "type": "string",
+            "title": "Job"
+          },
+          "import_id": {
+            "type": "integer",
+            "title": "Import Id"
+          },
+          "imported_at": {
+            "type": "string",
+            "title": "Imported At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account",
+          "kind",
+          "reason"
+        ],
+        "title": "LeftOut",
+        "description": "One account the books left out, or booked from an older import (policy 05 rule 25.7)."
+      },
       "LighterAccountCreate": {
         "properties": {
           "label": {
@@ -13086,6 +14172,11 @@
               }
             ],
             "title": "Resource Id"
+          },
+          "share": {
+            "type": "boolean",
+            "title": "Share",
+            "default": false
           },
           "unit": {
             "type": "string",
@@ -13340,6 +14431,24 @@
             "type": "array",
             "title": "Missing"
           },
+          "negative_holdings": {
+            "items": {
+              "$ref": "#/components/schemas/NegativeHolding"
+            },
+            "type": "array",
+            "title": "Negative Holdings"
+          },
+          "prices_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prices At"
+          },
           "realized": {
             "anyOf": [
               {
@@ -13371,7 +14480,9 @@
           "contributions",
           "mtm_pnl",
           "complete",
-          "missing"
+          "missing",
+          "negative_holdings",
+          "prices_at"
         ],
         "title": "LivePoint",
         "description": "The headline figures of one instant of the live layer (rules 39.1 and 39.2.5); decimals as text."
@@ -13461,6 +14572,105 @@
         "title": "LiveRow",
         "description": "One valued row of a day of the live layer (rule 39.2); decimals as text."
       },
+      "LiveState": {
+        "properties": {
+          "revision_id": {
+            "type": "string",
+            "const": "live",
+            "title": "Revision Id"
+          },
+          "status": {
+            "type": "string",
+            "const": "live",
+            "title": "Status"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "digest": {
+            "type": "string",
+            "title": "Digest"
+          },
+          "computed_at": {
+            "type": "string",
+            "title": "Computed At"
+          },
+          "updating": {
+            "type": "boolean",
+            "title": "Updating"
+          },
+          "policy": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Policy"
+          },
+          "records": {
+            "type": "integer",
+            "title": "Records"
+          },
+          "links": {
+            "type": "integer",
+            "title": "Links"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/Issue"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/RevisionWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "audit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BooksAudit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "left_out": {
+            "items": {
+              "$ref": "#/components/schemas/LeftOut"
+            },
+            "type": "array",
+            "title": "Left Out"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision_id",
+          "status",
+          "as_of",
+          "digest",
+          "computed_at",
+          "updating",
+          "policy",
+          "records",
+          "links",
+          "complete",
+          "issues",
+          "warnings",
+          "audit",
+          "left_out"
+        ],
+        "title": "LiveState",
+        "description": "The live books' state (`GET {P}/books/live`, policy 05 rule 36): what they are, as of when, and what they say about themselves."
+      },
       "MergeInternal": {
         "properties": {
           "kind": {
@@ -13524,6 +14734,59 @@
         ],
         "title": "MergeInternalBody",
         "description": "Declare two records one internal movement: `withdrawal` leaves one account, `deposit` arrives in another (ids from `GET {P}/corrections/candidates`)."
+      },
+      "NegativeHolding": {
+        "properties": {
+          "account": {
+            "type": "string",
+            "title": "Account"
+          },
+          "compartment": {
+            "type": "string",
+            "title": "Compartment"
+          },
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "native": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Native"
+          },
+          "quantity": {
+            "type": "string",
+            "title": "Quantity"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account",
+          "compartment",
+          "asset",
+          "native",
+          "quantity",
+          "value"
+        ],
+        "title": "NegativeHolding",
+        "description": "A holding below zero outside a liability compartment (policy 05 rule 39.2.6): a warning, most often missing history (an incomplete sync) or an unbooked record."
       },
       "NewCounterpartyBody": {
         "properties": {
@@ -13605,6 +14868,11 @@
             ],
             "title": "Resource Id"
           },
+          "share": {
+            "type": "boolean",
+            "title": "Share",
+            "default": false
+          },
           "unit": {
             "type": "string",
             "const": "noble",
@@ -13643,6 +14911,20 @@
             "type": "string",
             "title": "Resolve"
           },
+          "subject": {
+            "$ref": "#/components/schemas/ItemSubject"
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
           "accounts": {
             "items": {
               "type": "string"
@@ -13656,10 +14938,11 @@
           "id",
           "kind",
           "detail",
-          "resolve"
+          "resolve",
+          "subject"
         ],
         "title": "OpenItem",
-        "description": "One actionable gap in current portfolio evidence or accounting."
+        "description": "One actionable gap in current portfolio evidence or accounting (policy 02 interfaces Rule 2.7): `id` is a key, never parsed; `subject` says what it is about."
       },
       "Overview": {
         "properties": {
@@ -13707,6 +14990,16 @@
                 "type": "null"
               }
             ]
+          },
+          "pnl": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Headline"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -13745,6 +15038,196 @@
         ],
         "title": "OverviewCounts",
         "description": "What the portfolio holds."
+      },
+      "Period": {
+        "properties": {
+          "from": {
+            "type": "string",
+            "title": "From"
+          },
+          "to": {
+            "type": "string",
+            "title": "To"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "year",
+              "quarter",
+              "month",
+              "to_date"
+            ],
+            "title": "Kind"
+          },
+          "time_zone": {
+            "type": "string",
+            "title": "Time Zone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "kind",
+          "time_zone"
+        ],
+        "title": "Period"
+      },
+      "PnlGroup": {
+        "properties": {
+          "pnl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pnl"
+          },
+          "realized": {
+            "type": "string",
+            "title": "Realized"
+          },
+          "income": {
+            "type": "string",
+            "title": "Income"
+          },
+          "expenses": {
+            "type": "string",
+            "title": "Expenses"
+          },
+          "flows": {
+            "items": {
+              "$ref": "#/components/schemas/Flow"
+            },
+            "type": "array",
+            "title": "Flows"
+          },
+          "unrealized": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unrealized"
+          },
+          "not_in_books": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Not In Books"
+          },
+          "causes": {
+            "items": {
+              "$ref": "#/components/schemas/WarningCause"
+            },
+            "type": "array",
+            "title": "Causes"
+          },
+          "group": {
+            "type": "string",
+            "title": "Group"
+          },
+          "nav": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nav"
+          },
+          "contributions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contributions"
+          },
+          "cost": {
+            "type": "string",
+            "title": "Cost"
+          },
+          "pooled": {
+            "type": "boolean",
+            "title": "Pooled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pnl",
+          "realized",
+          "income",
+          "expenses",
+          "flows",
+          "unrealized",
+          "not_in_books",
+          "group"
+        ],
+        "title": "PnlGroup",
+        "description": "One group of `{P}/pnl`."
+      },
+      "PnlPage": {
+        "properties": {
+          "by": {
+            "type": "string",
+            "enum": [
+              "asset",
+              "account",
+              "month",
+              "year"
+            ],
+            "title": "By"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "time_zone": {
+            "type": "string",
+            "title": "Time Zone"
+          },
+          "basis": {
+            "$ref": "#/components/schemas/Basis"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/PnlGroup"
+            },
+            "type": "array",
+            "title": "Groups"
+          },
+          "total": {
+            "$ref": "#/components/schemas/Breakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "by",
+          "currency",
+          "time_zone",
+          "basis",
+          "groups",
+          "total"
+        ],
+        "title": "PnlPage",
+        "description": "`{P}/pnl` (policy 05 rule 36)."
       },
       "Policy": {
         "properties": {
@@ -14033,6 +15516,10 @@
             ],
             "title": "Label"
           },
+          "time_zone": {
+            "type": "string",
+            "title": "Time Zone"
+          },
           "policy": {
             "additionalProperties": {
               "$ref": "#/components/schemas/JsonValue"
@@ -14053,6 +15540,7 @@
         "required": [
           "portfolio_id",
           "label",
+          "time_zone",
           "policy",
           "accounts",
           "archived"
@@ -14096,6 +15584,45 @@
       },
       "PortfolioSummary": {
         "properties": {
+          "accounts": {
+            "type": "integer",
+            "title": "Accounts"
+          },
+          "archived": {
+            "type": "integer",
+            "title": "Archived"
+          },
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Items"
+          },
+          "last_sync": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "value": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoredValue"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "portfolio_id": {
             "type": "string",
             "title": "Portfolio Id"
@@ -14118,12 +15645,17 @@
         },
         "type": "object",
         "required": [
+          "accounts",
+          "archived",
+          "items",
+          "last_sync",
+          "value",
           "portfolio_id",
           "label",
           "created_at"
         ],
         "title": "PortfolioSummary",
-        "description": "One portfolio of the tenant."
+        "description": "One portfolio of the tenant with its headline: account and open-item counts, newest sync and stored value (policy 02 interfaces Rule 2.6)."
       },
       "PortfolioUpdate": {
         "properties": {
@@ -14141,6 +15673,10 @@
               }
             ],
             "title": "Label"
+          },
+          "time_zone": {
+            "type": "string",
+            "title": "Time Zone"
           },
           "policy": {
             "additionalProperties": {
@@ -14180,6 +15716,7 @@
         "required": [
           "portfolio_id",
           "label",
+          "time_zone",
           "policy",
           "accounts",
           "archived",
@@ -14956,6 +16493,16 @@
               }
             ]
           },
+          "limit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UnitLimit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "error": {
             "type": "string",
             "title": "Error"
@@ -14966,7 +16513,8 @@
           "unit",
           "resource_id",
           "network",
-          "budget"
+          "budget",
+          "limit"
         ],
         "title": "ResourceBudget",
         "description": "One unit resource of an account and its unit's budget read."
@@ -15168,21 +16716,50 @@
             "title": "Revision Id"
           },
           "as_of": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "As Of"
           },
           "policy": {
             "$ref": "#/components/schemas/JsonValue"
+          },
+          "valued_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valued At"
+          },
+          "computed": {
+            "type": "boolean",
+            "title": "Computed"
+          },
+          "updating": {
+            "type": "boolean",
+            "title": "Updating"
           }
         },
         "type": "object",
         "required": [
           "revision_id",
           "as_of",
-          "policy"
+          "policy",
+          "valued_at",
+          "computed",
+          "updating"
         ],
         "title": "RevisionBasis",
-        "description": "The revision a totals page joins (policy 05 rule 34)."
+        "description": "The revision a totals page joins (policy 05 rule 34): a sealed one, or the live books."
       },
       "RevisionDetail": {
         "properties": {
@@ -15307,6 +16884,47 @@
             "type": "integer",
             "title": "Files"
           },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Period"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "export",
+                  "final",
+                  "snapshot"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "digest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Digest"
+          },
           "issues": {
             "items": {
               "$ref": "#/components/schemas/Issue"
@@ -15352,6 +16970,10 @@
           "active",
           "imports",
           "files",
+          "size",
+          "period",
+          "reason",
+          "digest",
           "issues",
           "warnings",
           "summary",
@@ -15530,6 +17152,47 @@
           "files": {
             "type": "integer",
             "title": "Files"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Period"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "export",
+                  "final",
+                  "snapshot"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "digest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Digest"
           }
         },
         "type": "object",
@@ -15547,7 +17210,11 @@
           "job",
           "active",
           "imports",
-          "files"
+          "files",
+          "size",
+          "period",
+          "reason",
+          "digest"
         ],
         "title": "RevisionSummary",
         "description": "A sealed books revision in a listing."
@@ -15632,6 +17299,64 @@
         "title": "Route",
         "description": "One public route (policy 03 contract Rule 19.1's `extra_routes` entry)."
       },
+      "RowCounterparty": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "mine": {
+            "type": "boolean",
+            "title": "Mine"
+          },
+          "correction": {
+            "type": "integer",
+            "title": "Correction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "mine",
+          "correction"
+        ],
+        "title": "RowCounterparty",
+        "description": "The portfolio counterparty a `classify_boundary` tag in force names on one of the row's records (Rule 2.4.1 item 4)."
+      },
+      "RowFee": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/RecordSide"
+            },
+            "type": "array",
+            "title": "Records"
+          },
+          "legs": {
+            "items": {
+              "$ref": "#/components/schemas/FeeLeg"
+            },
+            "type": "array",
+            "title": "Legs"
+          },
+          "value": {
+            "$ref": "#/components/schemas/RowValue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "records",
+          "legs",
+          "value"
+        ],
+        "title": "RowFee",
+        "description": "The network fee of a row's transaction (Rule 2.4.1 item 2)."
+      },
       "RowLink": {
         "properties": {
           "id": {
@@ -15678,6 +17403,45 @@
         ],
         "title": "RowLink",
         "description": "The link that makes a row one transfer (`GET {P}/links/{id}`)."
+      },
+      "RowValue": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "day": {
+            "type": "string",
+            "title": "Day"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/ValueGap"
+            },
+            "type": "array",
+            "title": "Gaps"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount",
+          "day",
+          "complete",
+          "gaps"
+        ],
+        "title": "RowValue",
+        "description": "What a row (or its fee) moved, in the reporting currency (`HistoryPage.currency`)."
       },
       "RowsPage": {
         "properties": {
@@ -15753,6 +17517,40 @@
         ],
         "title": "RowsPage",
         "description": "One page of a revision's rows of one kind (policy 05 rule 36)."
+      },
+      "Sealed": {
+        "properties": {
+          "revision_id": {
+            "type": "string",
+            "title": "Revision Id"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "export",
+              "final",
+              "snapshot"
+            ],
+            "title": "Reason"
+          },
+          "reused": {
+            "type": "boolean",
+            "title": "Reused"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision_id",
+          "as_of",
+          "reason",
+          "reused"
+        ],
+        "title": "Sealed",
+        "description": "A seal answered at once with the revision that already holds these books (policy 05 rule 37.2)."
       },
       "SerializedRecord": {
         "properties": {
@@ -15834,6 +17632,24 @@
             "type": "array",
             "title": "Missing"
           },
+          "negative_holdings": {
+            "items": {
+              "$ref": "#/components/schemas/NegativeHolding"
+            },
+            "type": "array",
+            "title": "Negative Holdings"
+          },
+          "prices_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prices At"
+          },
           "rows": {
             "items": {
               "$ref": "#/components/schemas/LiveRow"
@@ -15851,6 +17667,8 @@
           "mtm_pnl",
           "complete",
           "missing",
+          "negative_holdings",
+          "prices_at",
           "rows"
         ],
         "title": "SeriesPoint",
@@ -16248,6 +18066,17 @@
             "type": "string",
             "title": "Asset"
           },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
           "kind": {
             "type": "string",
             "enum": [
@@ -16328,6 +18157,7 @@
           "start",
           "end",
           "asset",
+          "asset_id",
           "kind",
           "expected",
           "actual",
@@ -16400,6 +18230,35 @@
         ],
         "title": "StateResult",
         "description": "Portfolio balances at an optional timestamp."
+      },
+      "StoredValue": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          },
+          "valued_at": {
+            "type": "string",
+            "title": "Valued At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "currency",
+          "complete",
+          "valued_at"
+        ],
+        "title": "StoredValue",
+        "description": "The portfolio's value as a job last stored it."
       },
       "SyncRequestBody": {
         "properties": {
@@ -16479,6 +18338,13 @@
             },
             "type": "array",
             "title": "Excluded"
+          },
+          "negative_holdings": {
+            "items": {
+              "$ref": "#/components/schemas/NegativeHolding"
+            },
+            "type": "array",
+            "title": "Negative Holdings"
           }
         },
         "type": "object",
@@ -16493,7 +18359,8 @@
           "not_valued",
           "mostly_unvalued",
           "unvalued",
-          "excluded"
+          "excluded",
+          "negative_holdings"
         ],
         "title": "Total",
         "description": "A value in the reporting currency with its split and counts (policy 02 interfaces Rule 2.2, policy 04 gap 4); `complete` is false whenever a gap was left out."
@@ -16603,6 +18470,9 @@
           "address": {
             "type": "string",
             "title": "Address"
+          },
+          "limit": {
+            "$ref": "#/components/schemas/UnitLimit"
           }
         },
         "type": "object",
@@ -16739,15 +18609,87 @@
         "title": "UnitEstimate",
         "description": "What a resource's next (or first) sync may cost (evm `Estimate`, hl `ArchiveEstimate`); approximate."
       },
+      "UnitLimit": {
+        "properties": {
+          "limit_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit Usd"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "month",
+              "lifetime"
+            ],
+            "title": "Period"
+          },
+          "spent_usd": {
+            "type": "number",
+            "title": "Spent Usd"
+          },
+          "remaining_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining Usd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "limit_usd",
+          "period",
+          "spent_usd",
+          "remaining_usd"
+        ],
+        "title": "UnitLimit",
+        "description": "The tenant budget of a resource (litmus-unit's `Budget`, `GET …/resources/{r}/budget`): a hard limit an admin sets (policy 02 access Rule 7.2)."
+      },
+      "UnitMeter": {
+        "properties": {
+          "meter": {
+            "type": "string",
+            "title": "Meter"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "quantity": {
+            "type": "number",
+            "title": "Quantity"
+          },
+          "usd": {
+            "type": "number",
+            "title": "Usd"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meter",
+          "unit",
+          "quantity",
+          "usd"
+        ],
+        "title": "UnitMeter",
+        "description": "One meter of a resource's usage, as litmus-unit serves it (policy 03 contract rule 4.5)."
+      },
       "UnitSpend": {
         "properties": {
           "provider": {
             "type": "string",
             "title": "Provider"
-          },
-          "calls": {
-            "type": "integer",
-            "title": "Calls"
           },
           "usd": {
             "type": "number",
@@ -16795,31 +18737,26 @@
             "const": "lifetime",
             "title": "Period"
           },
-          "cu": {
-            "type": "integer",
-            "title": "Cu"
-          },
-          "bytes": {
-            "type": "integer",
-            "title": "Bytes"
-          },
-          "mirror_bytes": {
-            "type": "integer",
-            "title": "Mirror Bytes"
+          "meters": {
+            "items": {
+              "$ref": "#/components/schemas/UnitMeter"
+            },
+            "type": "array",
+            "title": "Meters"
           }
         },
         "type": "object",
         "required": [
           "provider",
-          "calls",
           "usd",
           "budget_usd",
           "remaining_usd",
           "fraction",
-          "warn"
+          "warn",
+          "meters"
         ],
         "title": "UnitSpend",
-        "description": "One paid provider's metered spend of a resource against its limit (evm `ProviderSpend`, hl `ArchiveSpend`)."
+        "description": "One paid provider's metered spend of a resource against the operator's cap."
       },
       "Unmatched": {
         "properties": {
@@ -16835,6 +18772,17 @@
             "type": "string",
             "title": "Asset"
           },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
           "count": {
             "type": "integer",
             "title": "Count"
@@ -16849,6 +18797,7 @@
           "account",
           "type",
           "asset",
+          "asset_id",
           "count",
           "total"
         ],
@@ -17099,6 +19048,47 @@
         ],
         "title": "ValueAllowance",
         "description": "Historical valuation evidence and its allowed unit difference."
+      },
+      "ValueGap": {
+        "properties": {
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Id"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "unresolved_asset",
+              "no_price",
+              "stale_price",
+              "no_mark",
+              "unbooked_liability",
+              "nft",
+              "lp_position",
+              "fx"
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset",
+          "asset_id",
+          "reason"
+        ],
+        "title": "ValueGap",
+        "description": "An asset a row moved that has no price on its day."
       },
       "ValuedCompartment": {
         "properties": {
@@ -17436,6 +19426,9 @@
           "failed": {
             "type": "integer",
             "title": "Failed"
+          },
+          "discovery": {
+            "$ref": "#/components/schemas/DiscoveryProgress"
           }
         },
         "type": "object",
@@ -17454,8 +19447,10 @@
             "enum": [
               "holdings_not_in_books",
               "contributions",
+              "rounding",
               "position_entries",
-              "other"
+              "holdings_without_value",
+              "unexplained"
             ],
             "title": "Cause"
           },

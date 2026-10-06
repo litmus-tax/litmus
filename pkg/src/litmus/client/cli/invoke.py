@@ -186,6 +186,8 @@ def run(context: Context) -> int:
   if found is None:
     raise ValueError(f'{service} serves no {command.method} {path}')
   client = context.authorize(tenant=not command.tenantless)
+  if command.seal:
+    args.p_revision_id = sealed(context, client, command)
   target = fill(context, client, command, path)
   params = query(context, found)
   if command.words[-2:] == ('jobs', 'watch'):
@@ -213,6 +215,41 @@ def run(context: Context) -> int:
   if answer is not None or response.status_code != 204:
     context.output.body(answer)
   return 0
+
+
+def sealed(context: Context, client: Client, command: Command) -> str:
+  """
+  The revision a command runs on: the one given, or the books sealed at `--as-of` first (`POST {P}/books {as_of, reason}`, policy 05 rule 37.2), reused or awaited.
+
+  Raises:
+    ValueError: Neither a revision nor `--as-of` is given, or the seal did not succeed.
+  """
+  args = context.args
+  given = getattr(args, 'p_revision_id', None)
+  as_of = getattr(args, 'seal_as_of', None)
+  if given and as_of:
+    raise ValueError('Give a revision or --as-of, not both')
+  if given:
+    return given
+  if not as_of:
+    raise ValueError('Give a revision, or --as-of DATE to seal the books there first')
+  portfolio = portfolio_id(context, client)
+  response = client.request(
+    'POST',
+    f'v1/portfolio/portfolios/{portfolio}/books',
+    body={'as_of': as_of, 'reason': command.seal},
+  )
+  answer = cast(dict[str, JsonValue], response.json())
+  if response.status_code == 200 and isinstance(answer.get('revision_id'), str):
+    context.output.note(f'reusing revision {answer["revision_id"]}, sealed before')
+    return str(answer['revision_id'])
+  job = watch(context, client, f'v1/portfolio/jobs/{answer["job"]}')
+  result = job.get('result')
+  if job['status'] != 'succeeded' or not isinstance(result, dict):
+    raise ValueError(
+      f'Sealing the books at {as_of} did not succeed: {job.get("error")}'
+    )
+  return str(result['revision_id'])
 
 
 def send(

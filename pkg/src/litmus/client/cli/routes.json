@@ -694,7 +694,7 @@
   "portfolio": {
     "GET /v1/portfolio/portfolios": {
       "summary": "Portfolios",
-      "help": "One page of the tenant's portfolios by id, with their display names (only those in a `resources` claim, when the token has one).",
+      "help": "One page of the tenant's portfolios by id (only those in a `resources` claim, when the token has one), each with its display name and headline (policy 02 interfaces Rule 2.6): active and archived account counts, its newest sync job, and the open-item count and value a job stored when it last derived the portfolio's reads (`null` until one has; `value` is the net value in the reporting currency with `complete` and `valued_at`). Nothing is derived or valued on this read; `{P}/overview` and `{P}/valuation` are the current figures.",
       "query": [
         {
           "name": "cursor",
@@ -1032,7 +1032,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/accounts": {
       "summary": "Accounts",
-      "help": "One page of the accounts by id, with their label, archive time, resources, import status, source verification and coverage.",
+      "help": "One page of the accounts by id, with their label, archive time, resources, import status, source verification and coverage, and each one's `pnl` from the live books (policy 05 rule 44.4, decision 34): its live MTM P&L (`pnl`, its NAV now less its net transfers in, internal ones included, at market: `nav`, `contributions`) with its booked realized P&L, income and expenses as components and the rest `unrealized`, `pooled` under the `global` lot scope; null before the live books are computed.",
       "query": [
         {
           "name": "archived",
@@ -1065,7 +1065,7 @@
     },
     "POST /v1/portfolio/portfolios/{portfolio_id}/accounts": {
       "summary": "Account New",
-      "help": "Add an account (and hl sub-accounts), binding or creating its unit resources: one per confirmed network for evm (or per active network when none are given), one otherwise. Never syncs.",
+      "help": "Add an account (and hl sub-accounts) with new unit resources: one per confirmed network for evm (or per active network when none are given), one otherwise. An existing resource is bound only when `resource_id` names it (for an evm account, `resources` names one per network), and one other accounts read only with `share: true` (else `409 resource-shared`; policy 04 Rule 13.7). Never syncs.",
       "query": [],
       "body": {
         "media": "application/json",
@@ -1100,6 +1100,16 @@
             "choices": [],
             "required": false,
             "help": "Resource Id"
+          },
+          {
+            "path": [
+              "share"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Share"
           },
           {
             "path": [
@@ -1239,7 +1249,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/budget": {
       "summary": "Budget",
-      "help": "Provider spend and next-sync estimates of every active account's resources (evm per network: Alchemy/dRPC this month; hl: the S3 archive over the resource's life), per account and in total. One read per unit, no provider call; `would_exceed` says a sync would pass a resource's limit, which its unit then refuses (a hard limit, policy 02 access Rule 7.2). The units are read with the caller's own credential.",
+      "help": "Every active account's budgets in one read (policy 02 interfaces Rule 10.7): per resource its tenant budget (`limit`: `limit_usd`, the `period` it covers, `spent_usd` in that period, `remaining_usd`), and provider spend against the operator's caps and next-sync estimates (evm per network: Alchemy/dRPC this month; hl: the S3 archive over the resource's life), per account and in total. One read per unit, no provider call; `would_exceed` says a sync would pass a resource's limit, which its unit then refuses (a hard limit, policy 02 access Rule 7.2). The units are read with the caller's own credential.",
       "query": [],
       "body": null,
       "job": false,
@@ -1247,7 +1257,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/accounts/{account}/budget": {
       "summary": "Account Budget Show",
-      "help": "The account's resources with their units' budget reads (`spend`, `estimate`, `would_exceed`) and the total; cex and dydx resources have none. A unit that cannot answer leaves an `error` on its resources; the units are read with the caller's own credential.",
+      "help": "The account's resources with their tenant budgets (`limit`) and their units' usage reads (`spend` against the operator's caps, `estimate`, `would_exceed`), and the total; cex and dydx resources have none. A unit that cannot answer leaves an `error` on its resources; the units are read with the caller's own credential.",
       "query": [],
       "body": null,
       "job": false,
@@ -2257,7 +2267,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/history": {
       "summary": "History Rows",
-      "help": "One page of the portfolio's history, one row per economic event: a record alone (`event`), or a withdrawal and a deposit portfolio linked as one `transfer` row with both records (withdrawal first), the link, and the residual (the fee or loss in transit) when both move one asset. Each record carries its account, time, legs, the on-chain `reference`, its unit resource and evidence digests to open at the unit. A transfer leg without a counterpart is `unmatched` (see `GET {P}/unmatched`). A transfer row appears once, where its first record passing the filters falls, so filtering by one account still shows the other account's side.",
+      "help": "One page of the portfolio's history, one row per transaction (policy 02 interfaces Rule 2.4.1): a linked withdrawal and deposit as one `transfer` row with both records (withdrawal first), the link and the residual (the fee or loss in transit) when both move one asset; else the records of one account's transaction (`event`, its records sharing a `tx_id`). The records paying the transaction's network fee are the row's `fee` (records, legs per asset, value), a row of their own (`fee`) only when their transaction moved nothing else. Each row carries its `value` in the reporting currency (`currency`) at the daily prices of its UTC day, `complete` false with the unpriced assets when a leg has none; the counterparty a boundary tag in force names on one of its records; and whether a transfer leg is `unmatched` (see `GET {P}/unmatched`). Each record carries its account, time, legs, the on-chain `reference`, its unit resource and evidence digests to open at the unit. A row appears once, where its first record passing the filters falls, so filtering by one account still shows the other account's side; a fee's records match the filters only on a row of their own. `total` counts the rows matching the filters and `facets` the rows each account, type and asset would match with the other filters, the same on every page.",
       "query": [
         {
           "name": "account",
@@ -2358,7 +2368,7 @@
     },
     "POST /v1/portfolio/portfolios/{portfolio_id}/books": {
       "summary": "Books",
-      "help": "Queue a books run up to `as_of` (default: now): translate the ledger up to it, fetch the daily prices its events need from the price provider (never prices of holdings: the engine values nothing at market, policy 05 rule 1.5), validate the engine input, run the accounting engine, audit, and seal the package (records, links, policy, coverage, corrections, the prices the events used, engine input and output with its rows and open-lot rows, audit, and every cited evidence object fetched from its unit; no series and no valuation, rule 23.5) as a new immutable revision (`GET {P}/books`). The result is the books summary with its `revision_id`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A books run already queued or running is returned instead. Needs `correct` (policy 05 rule 36).",
+      "help": "Seal the books at `as_of` (default: the end of the latest import) for a `reason` (policy 05 rule 37.2): `export`, `final` (needs `admin`; the revision is then marked final, rule 37.3) or `snapshot`. Nothing seals automatically. When a revision under the current policy with the same `as_of` and input digest exists, it is reused: answered at once (200, `reused`) when the live books at that `as_of` are cached and current, else found by the seal job once it has translated and priced, before it runs anything else. Otherwise the job translates the ledger up to `as_of`, fetches the daily prices its events need (never prices of holdings, rule 1.5), validates, runs the engine, audits, and seals the package (records, links, policy, coverage, corrections, the prices the events used, engine input and output with its rows and open-lot rows, audit, and every cited evidence object fetched from its unit; no series and no valuation, rule 23.5) as a new immutable revision recording its reason and input digest; its progress names each step, packaging and storing included. The result is the books summary with its `revision_id`, `reason` and `reused`. A person's run holds one job token for reading evidence from the units, revoked when it ends; a run started with an API key reads with that key (403 `key-audience-missing` when its audience lacks a unit). A seal at the same `as_of` already queued or running is returned instead. Needs `correct` (`admin` for `final`).",
       "query": [],
       "body": {
         "media": "application/json",
@@ -2383,6 +2393,20 @@
             "choices": [],
             "required": false,
             "help": "As Of"
+          },
+          {
+            "path": [
+              "reason"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "export",
+              "final",
+              "snapshot"
+            ],
+            "required": false,
+            "help": "Reason"
           }
         ]
       },
@@ -2414,6 +2438,23 @@
       "job": false,
       "binary": false
     },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/books/live": {
+      "summary": "Live",
+      "help": "The live books' state (policy 05 term 18, rule 36): the portfolio's books computed in memory from its current inputs under its current policy, whenever an input changes, and never sealed. It says their `as_of` (the end of the latest import, or the instant asked for), input digest, when they were computed, whether they are `updating` (their inputs changed since: a live job is computing them again, and every read serves these meanwhile), their completeness, open issues, warnings and audit. They are labelled `live`, never books, draft or final. Their rows are `GET {P}/books/live/rows?kind=`, their realized series `GET {P}/books/live/series`, and every accounting read takes `revision=live` by default. 202 with the live job that computes them when none are computed at that `as_of` yet; seal them with `POST {P}/books`. Needs `read`.",
+      "query": [
+        {
+          "name": "as_of",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The books at this instant (Close & export's date, policy 05 rule 37.1.4); default: at the end of the latest import."
+        }
+      ],
+      "body": null,
+      "job": true,
+      "binary": false
+    },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}": {
       "summary": "Revision",
       "help": "One sealed revision: its listing fields, its books summary as sealed (records, links, translation, engine completeness and exceptions, open positions, realized P&L by account, compartment and instrument, flows, pricing, audit) and its package files with their SHA-256.",
@@ -2424,7 +2465,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/rows": {
       "summary": "Rows",
-      "help": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings (per lot key, with opaque positions and open perp positions) and liabilities: the open-lot rows at `as_of` (`kind`, `quantity`, remaining `cost`, a position's entry basis in `settles_in`; policy 05 term 14), each with its live `value`, `label`, `price_at` and `unrealized` P&L (value − remaining cost) joined on read at `as_of` (rule 39.12.2; null when not valued), `values` saying when they were computed, and `warning` when the books' total P&L at `as_of` differs from the live MTM P&L (rule 39.5.2); the journal's double-entry lines; the movements with outside parties (policy 05 sub-ledger Rule 7): one row per boundary transfer leg (date, account, compartment, asset, quantity, direction, value, basis `market` or `carried`, cost and realized gain or loss when out, counterparty or untagged with its flag, note, reference, correction id, who tagged it, record id), untagged first, with `counterparties`: each one's transfers, value in and out and balance at `as_of`, the untagged first as their subtotal. Decimals are text; every row but a journal line has its `account`. 409 `rows-unavailable` for a revision sealed before revisions carried rows (for `boundary`, before they carried its movements with outside parties).",
+      "help": "One page of a revision's rows of one kind as the engine sealed them (policy 05 rule 36): disposals with their lots, proceeds, cost and P&L; income and expenses by nature label (a perpetual's realized P&L names its `instrument`); holdings (per lot key, with opaque positions and open perp positions) and liabilities: the open-lot rows at `as_of` (`kind`, `quantity`, remaining `cost`, a position's entry basis in `settles_in`; policy 05 term 14), each with its live `value`, `label`, `price_at` and `unrealized` P&L (value − remaining cost) joined on read at `as_of` (rule 39.12.2; null when not valued), `values` saying when they were computed, and `warning` when the books' total P&L at `as_of` differs from the live MTM P&L (rule 39.5.2); the journal's double-entry lines; the movements with outside parties (policy 05 sub-ledger Rule 7): one row per boundary transfer leg (date, account, compartment, asset, quantity, direction, value, basis `market` or `carried`, cost and realized gain or loss when out, counterparty or untagged with its flag, note, reference, correction id, who tagged it, record id), untagged first, with `counterparties`: each one's transfers, value in and out and balance at `as_of`, the untagged first as their subtotal. Decimals are text; every row but a journal line has its `account`. `revision_id` may be `live`: the live books' rows (policy 05 term 18; 409 `live-books-missing` before they are computed, and a live job is queued when they are missing or behind). 409 `rows-unavailable` for a revision sealed before revisions carried rows (for `boundary`, before they carried its movements with outside parties).",
       "query": [
         {
           "name": "kind",
@@ -2464,7 +2505,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/series": {
       "summary": "Series",
-      "help": "A revision's realized series (policy 05 rules 36 and 39.7), computed on read from its sealed rows: at every UTC day end (or the last of each month) from its first booked row to its `as_of`, then `as_of`, its realized P&L, its income and expenses by nature label, and their total (realized P&L + income − expenses), each in the interval (`period`) and to its end (`cumulative`). It carries no value, cost or unrealized P&L: NAV and MTM P&L are the live `{P}/totals`, which with `revision` adds unrealized P&L over time. `revision_id` may be `current`. 409 `rows-unavailable` for a revision sealed without rows or without an `as_of`.",
+      "help": "A revision's realized series (policy 05 rules 36 and 39.7), computed on read from its sealed rows: at every UTC day end (or the last of each month) from its first booked row to its `as_of`, then `as_of`, its realized P&L, its income and expenses by nature label, and their total (realized P&L + income − expenses), each in the interval (`period`) and to its end (`cumulative`). It carries no value, cost or unrealized P&L: NAV and MTM P&L are the live `{P}/totals`, which with `revision` adds unrealized P&L over time. `revision_id` may be `current`, or `live` for the live books (policy 05 term 18; their realized amounts per UTC day). 409 `rows-unavailable` for a revision sealed without rows or without an `as_of`.",
       "query": [
         {
           "name": "interval",
@@ -2500,8 +2541,36 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/books/{revision_id}/export": {
       "summary": "Export",
-      "help": "The sealed package of a revision as a zip file: every artifact at its package path, each verified against its hash when read. `manifest.json` lists the files with their SHA-256; unzip it and run a replay offline, or `POST …/replay` to replay it here.",
-      "query": [],
+      "help": "A sealed revision's export (policy 05 rule 31). `package`: the sealed package as a zip file, every artifact at its package path, each verified against its hash when read; `manifest.json` lists the files with their SHA-256; unzip it and run a replay offline, or `POST …/replay` to replay it here. `summary` (rule 31.5): the accountant's summary, one XLSX workbook dated in the portfolio's time zone: Summary (the header of rule 32.1, NAV at the period's start and end, net contributions, P&L and its breakdown), P&L by month and account, P&L by asset, Balance at cost (open-lot rows at `as_of` with market value and unrealized P&L when exported), Journal entries by month and account, Disposals, Income and expenses, and Open issues and notes. `live` is a 409: seal first (`POST {P}/books {reason: export}`).",
+      "query": [
+        {
+          "name": "format",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "package",
+            "summary"
+          ],
+          "required": false,
+          "help": "`package` (the sealed package as a zip) or `summary` (the accountant's summary, an XLSX workbook)."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`summary`: the period's first instant; default: after the newest earlier final revision, else the first record."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`summary`: the period's last instant; default: `as_of`."
+        }
+      ],
       "body": null,
       "job": false,
       "binary": true
@@ -2536,7 +2605,7 @@
     },
     "GET /v1/portfolio/portfolios/{portfolio_id}/totals": {
       "summary": "Totals",
-      "help": "The live layer's headline figures (policy 05 rules 36 and 39.1), without books: at every UTC day end (or the last of each month) from `from` to `to`, live NAV (holdings and opaque compartments valued, net of liabilities, plus open positions' unrealized P&L at the mark), net contributions (boundary transfers at their market value) and MTM P&L = NAV − contributions, each point `complete` or listing the assets not valued (`missing`; never valued at zero). With `revision`, each point it covers adds its realized results to date (`realized`: realized P&L + income − expenses) and `unrealized` = MTM P&L − realized (rule 39.12.1), its `as_of` is a point too, and `warning` states why the books' total P&L at `as_of` (realized + per-holding unrealized) differs from the live MTM P&L, by cause (rule 39.5.2); it is never folded into unrealized P&L. Values are computed when read and may change with prices or valuation rules (`computed_at`). 404 for an unknown revision (or none under the current policy for `current`); 409 `rows-unavailable` for one sealed without rows.",
+      "help": "The live layer's headline figures (policy 05 rules 36 and 39.1), without books: at every UTC day end (or the last of each month) from `from` to `to`, live NAV (holdings and opaque compartments valued, net of liabilities, plus open positions' unrealized P&L at the mark), net contributions (boundary transfers at their market value) and MTM P&L = NAV − contributions, each point `complete` or listing the assets not valued (`missing`; never valued at zero). Joined with the live books by default (`revision=live`, rule 36; a sealed revision when named), each point they cover adds its realized results to date (`realized`: realized P&L + income − expenses) and `unrealized` = MTM P&L − realized (rule 39.12.1): the live books cover every point, since nothing after the latest import is known, and are valued at the time of reading (decision 33); a sealed revision covers the points up to its `as_of`, which is a point too. `revision` states the basis (rule 34): its id, `as_of`, policy, `valued_at`, and for the live books `updating` (a live job is computing them again) or `computed: false` (not computed yet: no point carries realized results, and a live job is queued). `warning` states why the books' total P&L at `as_of` (realized + per-holding unrealized) differs from the live MTM P&L, by cause (rule 39.5.2); it is never folded into unrealized P&L. Values are computed when read and may change with prices or valuation rules (`computed_at`). 404 for an unknown revision (or none under the current policy for `current`); 409 `rows-unavailable` for one sealed without rows.",
       "query": [
         {
           "name": "interval",
@@ -2571,7 +2640,7 @@
           "repeated": false,
           "choices": [],
           "required": false,
-          "help": "A books revision (`current`: the newest built under the current policy) to join: its realized results and unrealized P&L for the instants it covers, and the warning at its `as_of`."
+          "help": "The books to join: `live` (the default: the live books, policy 05 term 18), a sealed revision, or `current` (the newest sealed under the current policy); their realized results and unrealized P&L for the instants they cover, and the warning at their `as_of`."
         }
       ],
       "body": null,
@@ -2614,9 +2683,55 @@
       "job": false,
       "binary": false
     },
+    "GET /v1/portfolio/portfolios/{portfolio_id}/pnl": {
+      "summary": "Profit And Loss",
+      "help": "P&L by asset, account, month or year (policy 05 rules 36, 43.2 and 44.5), from the live books by default (or a sealed revision), with the portfolio's `total`: P&L now and its breakdown, whose lines add up to it. Each group carries realized P&L, income and expenses (with `flows` by label), unrealized P&L, `not_in_books` and P&L. An asset group adds the remaining `cost` of its holdings, valued now for the live books (decision 33). An account group's P&L is its live MTM P&L (`nav` − `contributions`), its booked figures components and the rest unrealized, `pooled` under the `global` lot scope (decision 34). A month or year group is dated in the portfolio's `time_zone`; its P&L is the MTM P&L at its end less at its start, its booked figures those of the period and its unrealized P&L the change over it. `from` and `to` narrow the booked figures to those days. `basis` states the books and when holdings are valued (rule 34). 409 `live-books-missing` before the live books are computed (a live job is queued). Needs `read`.",
+      "query": [
+        {
+          "name": "by",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "asset",
+            "account",
+            "month",
+            "year"
+          ],
+          "required": true,
+          "help": "`asset`, `account`, or `month` / `year` in the portfolio time zone."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The first instant served."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The last instant served."
+        },
+        {
+          "name": "revision",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The books: `live` (the default, the live books) or a sealed revision."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
     "POST /v1/portfolio/portfolios/{portfolio_id}/sync": {
       "summary": "Sync",
-      "help": "Queue a sync of the given accounts, else of every active one (archived accounts never sync): per resource a unit sync (a child job), then the import; a sync already queued or running for the portfolio is returned instead. The job's `accounts` are fixed now (every active account, for a sync of all).",
+      "help": "Queue a sync of the given accounts, else of every active one (archived accounts never sync): per resource a unit sync (a child job), then the import, then a reconcile of the whole portfolio (policy 01 portfolio Rule 10; its summary, or its error, is the result's `reconcile`); a sync already queued or running for the portfolio is returned instead. The job's `accounts` are fixed now (every active account, for a sync of all).",
       "query": [
         {
           "name": "account",
@@ -2689,7 +2804,7 @@
     },
     "GET /v1/portfolio/jobs": {
       "summary": "Jobs",
-      "help": "One page of the tenant's portfolio jobs, newest first, each with its accounts, latest progress message and children. `?portfolio=P&account=a&status=queued,running` finds an account's active sync.",
+      "help": "One page of the tenant's portfolio jobs, newest first, each with its accounts, latest progress message, children (each with its latest step) and `dry_run` mark. `?portfolio=P&account=a&status=queued,running` finds an account's active sync; `?kind=books&status=succeeded` the last books run (policy 02 interfaces Rule 15).",
       "query": [
         {
           "name": "portfolio",
@@ -2706,6 +2821,14 @@
           "choices": [],
           "required": false,
           "help": "Only jobs in these statuses: repeatable or comma-separated (`queued,running`)."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Only jobs of these kinds: repeatable or comma-separated (`sync,books`)."
         },
         {
           "name": "account",
@@ -2738,7 +2861,7 @@
     },
     "GET /v1/portfolio/jobs/{job_id}": {
       "summary": "Job",
-      "help": "One job with its complete progress, its unit child jobs, and its result or error once finished.",
+      "help": "One job with its complete progress, its unit child jobs (each with its latest step, times and record count), its `dry_run` mark, and its result or error once finished (policy 02 interfaces Rule 15).",
       "query": [],
       "body": null,
       "job": false,
@@ -2746,7 +2869,7 @@
     },
     "POST /v1/portfolio/jobs/{job_id}/cancel": {
       "summary": "Cancel",
-      "help": "Cancel a queued or running job and revoke its job token; the worker cancels the unit job it waits for and imports nothing more.",
+      "help": "Cancel a queued or running job: its unfinished unit jobs are cancelled, its job token revoked, and nothing more is imported (accounts imported before stay). The portfolio's next sync can start at once. 409 when the job already succeeded or failed.",
       "query": [],
       "body": null,
       "job": false,
