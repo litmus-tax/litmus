@@ -88,6 +88,23 @@ def configure(parser: argparse.ArgumentParser, command: Command, found: list[Rou
         nargs='?' if command.alternate else None,
         help='A resource name or id.',
       )
+    elif name in command.defaults:
+      parser.add_argument(
+        f'p_{name}',
+        metavar=argument(name),
+        nargs='?',
+        default=command.defaults[name],
+        help=f'Default: {command.defaults[name]}.',
+      )
+    elif name == 'revision_id' and command.seal:
+      parser.add_argument(
+        f'p_{name}', metavar=argument(name), nargs='?', help='Or --as-of DATE.'
+      )
+      parser.add_argument(
+        '--as-of',
+        dest='seal_as_of',
+        help=f'Seal the books at this instant first (reason {command.seal}; a revision with the same inputs is reused), then use that revision.',
+      )
     else:
       parser.add_argument(f'p_{name}', metavar=argument(name))
   parameters = [p for r in found for p in r['query']]

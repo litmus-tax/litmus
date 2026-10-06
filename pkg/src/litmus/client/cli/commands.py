@@ -36,6 +36,10 @@ class Command:
   """Only these body fields become options (all when empty)."""
   extra: tuple[str, ...] = ()
   """String body fields to offer where the schema declares none (a free-form `PATCH`)."""
+  defaults: dict[str, str] = field(default_factory=dict[str, str])
+  """Positionals that may be left out, with their value then (`revision_id`: `live`)."""
+  seal: str | None = None
+  """`--as-of DATE` in place of the revision seals the books at `DATE` first, for this reason (`POST {P}/books`, policy 05 rule 37.2), then runs on that revision."""
 
   @property
   def service(self) -> str:
@@ -44,6 +48,8 @@ class Command:
 
 
 P = '/v1/portfolio/portfolios/{portfolio_id}'
+LIVE = {'revision_id': 'live'}
+"""Reads of books default to the live books (policy 05 rule 41)."""
 T = '/v1/platform/tenants/{tenant_id}'
 R = '/resources/{resource_id}'
 
@@ -187,13 +193,19 @@ PORTFOLIO = [
   Command(('audit',), 'GET', f'{P}/audit'),
   Command(('totals',), 'GET', f'{P}/totals'),
   Command(('series',), 'GET', f'{P}/series'),
+  Command(('pnl',), 'GET', f'{P}/pnl'),
   Command(('books', 'build'), 'POST', f'{P}/books'),
+  Command(('books', 'live'), 'GET', f'{P}/books/live'),
   Command(('books', 'list'), 'GET', f'{P}/books'),
   Command(('books', 'show'), 'GET', f'{P}/books/{{revision_id}}'),
-  Command(('books', 'rows'), 'GET', f'{P}/books/{{revision_id}}/rows'),
-  Command(('books', 'series'), 'GET', f'{P}/books/{{revision_id}}/series'),
-  Command(('books', 'export'), 'GET', f'{P}/books/{{revision_id}}/export'),
-  Command(('books', 'final'), 'POST', f'{P}/books/{{revision_id}}/final'),
+  Command(('books', 'rows'), 'GET', f'{P}/books/{{revision_id}}/rows', defaults=LIVE),
+  Command(
+    ('books', 'series'), 'GET', f'{P}/books/{{revision_id}}/series', defaults=LIVE
+  ),
+  Command(
+    ('books', 'export'), 'GET', f'{P}/books/{{revision_id}}/export', seal='export'
+  ),
+  Command(('books', 'final'), 'POST', f'{P}/books/{{revision_id}}/final', seal='final'),
   Command(('books', 'unfinal'), 'DELETE', f'{P}/books/{{revision_id}}/final'),
   Command(('replay',), 'POST', f'{P}/books/{{revision_id}}/replay'),
   Command(('currencies',), 'GET', '/v1/portfolio/currencies'),
