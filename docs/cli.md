@@ -23,7 +23,7 @@ Why the `litmus` command is shaped as it is. The commands themselves come from t
 1. When stdout is not a TTY, or with `--json`, output is exactly the API response body; on a TTY it is a human rendering.
 2. Errors print the problem JSON and exit `1`; usage errors exit `2`. Progress goes to stderr.
 3. Long operations wait and show progress on stderr; `--detach` prints the job instead; `jobs watch` follows a job and its children.
-4. Paginated verbs print one page, or follow `next_cursor` with `--paginate` (owner, 2026-10-01: `--all` would clash with route parameters such as `edits?all`).
+4. Paginated verbs print one page, or follow `next_cursor` with `--all` and print every page as one; where a route has its own `all` parameter (`edits?all`), the flag is `--all-pages` only, so the two never clash (the clash the owner raised on 2026-10-01).
 
 *Why:* scripts and agents can move between the CLI and HTTP without changing how they read results or errors.
 
