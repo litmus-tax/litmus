@@ -147,4 +147,4 @@ Ruff and Pyright settings live in the repository-root `pyproject.toml` under
 Litmus repositories. Choose the installed development interpreter in your editor.
 See the [tooling policy](../platform/docs/technical/python-tooling.md) for details.
 
-[rule7]: https://github.com/litmus-tax/specs/blob/main/docs/policies/02-platform/interfaces.md
+[rule7]: docs/cli.md
