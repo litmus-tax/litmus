@@ -7416,5 +7416,2460 @@
       "job": false,
       "binary": false
     }
+  },
+  "noble": {
+    "GET /v1/noble/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/resources": {
+      "summary": "Resource List",
+      "help": "The tenant's resources that the credential covers, by name (rule 15).",
+      "query": [
+        {
+          "name": "name",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only the resource with this name."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/noble/resources": {
+      "summary": "Resource Create",
+      "help": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "binding",
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/resources/{resource_id}": {
+      "summary": "Resource Show",
+      "help": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/noble/resources/{resource_id}": {
+      "summary": "Resource Rename",
+      "help": "Rename the resource; its binding and interpretation never change (rule 2.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/noble/resources/{resource_id}": {
+      "summary": "Resource Delete",
+      "help": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/noble/resources/{resource_id}/sync": {
+      "summary": "Start a sync job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "fetch"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Fetch"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/noble/resources/{resource_id}/verification": {
+      "summary": "Start a verify job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": []
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/noble/resources/{resource_id}/verification": {
+      "summary": "Verification",
+      "help": "The latest verification of the current state (rule 48), each checkpoint of an `asset` key with its catalogue `asset_id` (rule 48.12); `POST` runs a live one as a job.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/jobs": {
+      "summary": "Job List",
+      "help": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
+      "query": [
+        {
+          "name": "resource",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this resource."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/jobs/{job_id}": {
+      "summary": "Job Show",
+      "help": "One job with its complete progress, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/noble/jobs/{job_id}/cancel": {
+      "summary": "Job Cancel",
+      "help": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/resources/{resource_id}/records": {
+      "summary": "Chain Records",
+      "help": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
+      "query": [
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Inclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Exclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Full kind names; repeatable."
+        },
+        {
+          "name": "compartment",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A leg compartment, or any inside it."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "from_height",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "to_height",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "legless",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`false` leaves out records without legs."
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "repeated": true,
+          "choices": [
+            "unsolicited"
+          ],
+          "required": false,
+          "help": "`unsolicited` includes records flagged unsolicited, which are left out otherwise."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/resources/{resource_id}/changes": {
+      "summary": "Changes",
+      "help": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
+      "query": [
+        {
+          "name": "since",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": "The version the caller holds; 0 for everything."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/resources/{resource_id}/state": {
+      "summary": "State",
+      "help": "The latest state, or the state replayed up to `at` (rule 46).",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339 or epoch milliseconds."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/resources/{resource_id}/compartments": {
+      "summary": "Compartments",
+      "help": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/resources/{resource_id}/items": {
+      "summary": "Items",
+      "help": "The open items, by id, pinned to a version (rule 50).",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Item kinds; repeatable."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/noble/resources/{resource_id}/export": {
+      "summary": "Export",
+      "help": "Stream the current state with its evidence closure (rule 12).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/noble/resources/{resource_id}/evidence/{digest}": {
+      "summary": "Evidence",
+      "help": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).",
+      "query": [
+        {
+          "name": "locator",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A record's locator."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "POST /v1/noble/probe": {
+      "summary": "Probe",
+      "help": "What a source is before a resource is created for it; calls are metered on the tenant.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    }
+  },
+  "margintrade": {
+    "GET /v1/margintrade/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/resources": {
+      "summary": "Resource List",
+      "help": "The tenant's resources that the credential covers, by name (rule 15).",
+      "query": [
+        {
+          "name": "name",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only the resource with this name."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/margintrade/resources": {
+      "summary": "Resource Create",
+      "help": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "binding",
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/resources/{resource_id}": {
+      "summary": "Resource Show",
+      "help": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/margintrade/resources/{resource_id}": {
+      "summary": "Resource Rename",
+      "help": "Rename the resource; its binding and interpretation never change (rule 2.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/margintrade/resources/{resource_id}": {
+      "summary": "Resource Delete",
+      "help": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/margintrade/resources/{resource_id}/sync": {
+      "summary": "Start a sync job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "fetch"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Fetch"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/margintrade/resources/{resource_id}/verification": {
+      "summary": "Start a verify job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": []
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/margintrade/resources/{resource_id}/verification": {
+      "summary": "Verification",
+      "help": "The latest verification of the current state (rule 48), each checkpoint of an `asset` key with its catalogue `asset_id` (rule 48.12); `POST` runs a live one as a job.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/jobs": {
+      "summary": "Job List",
+      "help": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
+      "query": [
+        {
+          "name": "resource",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this resource."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/jobs/{job_id}": {
+      "summary": "Job Show",
+      "help": "One job with its complete progress, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/margintrade/jobs/{job_id}/cancel": {
+      "summary": "Job Cancel",
+      "help": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/resources/{resource_id}/records": {
+      "summary": "Records",
+      "help": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
+      "query": [
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Inclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Exclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Full kind names; repeatable."
+        },
+        {
+          "name": "compartment",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A leg compartment, or any inside it."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "legless",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`false` leaves out records without legs."
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "repeated": true,
+          "choices": [
+            "unsolicited"
+          ],
+          "required": false,
+          "help": "`unsolicited` includes records flagged unsolicited, which are left out otherwise."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/resources/{resource_id}/changes": {
+      "summary": "Changes",
+      "help": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
+      "query": [
+        {
+          "name": "since",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": "The version the caller holds; 0 for everything."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/resources/{resource_id}/state": {
+      "summary": "State",
+      "help": "The latest state, or the state replayed up to `at` (rule 46).",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339 or epoch milliseconds."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/resources/{resource_id}/compartments": {
+      "summary": "Compartments",
+      "help": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/resources/{resource_id}/items": {
+      "summary": "Items",
+      "help": "The open items, by id, pinned to a version (rule 50).",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Item kinds; repeatable."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/margintrade/resources/{resource_id}/export": {
+      "summary": "Export",
+      "help": "Stream the current state with its evidence closure (rule 12).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/margintrade/resources/{resource_id}/evidence/{digest}": {
+      "summary": "Evidence",
+      "help": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).",
+      "query": [
+        {
+          "name": "locator",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A record's locator."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/margintrade/resources/{resource_id}/edits": {
+      "summary": "Edit List",
+      "help": "The active set (applied, not withdrawn), or with `all` every edit, in staging order (rules 7.3.3, 15).",
+      "query": [
+        {
+          "name": "all",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Every edit, not only the active set."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/margintrade/resources/{resource_id}/edits": {
+      "summary": "Edit Create",
+      "help": "Stage an edit for the resource's next sync (rule 7); a retry with the same `Idempotency-Key` returns the same edit.",
+      "query": [
+        {
+          "name": "apply",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Also start the sync that applies it now (needs `sync`); the edit names it as `job`."
+        }
+      ],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "kind"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [
+              "accept_unserved_funding"
+            ],
+            "required": true,
+            "help": "Kind"
+          },
+          {
+            "path": [
+              "coin"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Coin"
+          },
+          {
+            "path": [
+              "hours"
+            ],
+            "type": "integer",
+            "repeated": true,
+            "choices": [],
+            "required": true,
+            "help": "Hours"
+          },
+          {
+            "path": [
+              "amount"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Amount"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "DELETE /v1/margintrade/resources/{resource_id}/edits/{edit_id}": {
+      "summary": "Edit Remove",
+      "help": "Discard a pending edit (`200`), or stage an applied edit's withdrawal for the next sync (`202`; with `apply`, start it); a settled edit is returned as it is (rule 7.3).",
+      "query": [
+        {
+          "name": "apply",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Also start the sync that applies it now (needs `sync`); the edit names it as `job`."
+        }
+      ],
+      "body": null,
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/margintrade/probe": {
+      "summary": "Probe",
+      "help": "What a source is before a resource is created for it; calls are metered on the tenant.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    }
+  },
+  "grvt": {
+    "GET /v1/grvt/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/resources": {
+      "summary": "Resource List",
+      "help": "The tenant's resources that the credential covers, by name (rule 15).",
+      "query": [
+        {
+          "name": "name",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only the resource with this name."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/grvt/resources": {
+      "summary": "Resource Create",
+      "help": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "binding",
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/resources/{resource_id}": {
+      "summary": "Resource Show",
+      "help": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/grvt/resources/{resource_id}": {
+      "summary": "Resource Rename",
+      "help": "Rename the resource; its binding and interpretation never change (rule 2.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/grvt/resources/{resource_id}": {
+      "summary": "Resource Delete",
+      "help": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/grvt/resources/{resource_id}/sync": {
+      "summary": "Start a sync job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "fetch"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Fetch"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/grvt/resources/{resource_id}/verification": {
+      "summary": "Start a verify job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": []
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/grvt/resources/{resource_id}/verification": {
+      "summary": "Verification",
+      "help": "The latest verification of the current state (rule 48), each checkpoint of an `asset` key with its catalogue `asset_id` (rule 48.12); `POST` runs a live one as a job.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/jobs": {
+      "summary": "Job List",
+      "help": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
+      "query": [
+        {
+          "name": "resource",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this resource."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/jobs/{job_id}": {
+      "summary": "Job Show",
+      "help": "One job with its complete progress, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/grvt/jobs/{job_id}/cancel": {
+      "summary": "Job Cancel",
+      "help": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/resources/{resource_id}/records": {
+      "summary": "Records",
+      "help": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
+      "query": [
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Inclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Exclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Full kind names; repeatable."
+        },
+        {
+          "name": "compartment",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A leg compartment, or any inside it."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "legless",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`false` leaves out records without legs."
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "repeated": true,
+          "choices": [
+            "unsolicited"
+          ],
+          "required": false,
+          "help": "`unsolicited` includes records flagged unsolicited, which are left out otherwise."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/resources/{resource_id}/changes": {
+      "summary": "Changes",
+      "help": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
+      "query": [
+        {
+          "name": "since",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": "The version the caller holds; 0 for everything."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/resources/{resource_id}/state": {
+      "summary": "State",
+      "help": "The latest state, or the state replayed up to `at` (rule 46).",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339 or epoch milliseconds."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/resources/{resource_id}/compartments": {
+      "summary": "Compartments",
+      "help": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/resources/{resource_id}/items": {
+      "summary": "Items",
+      "help": "The open items, by id, pinned to a version (rule 50).",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Item kinds; repeatable."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/grvt/resources/{resource_id}/export": {
+      "summary": "Export",
+      "help": "Stream the current state with its evidence closure (rule 12).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/grvt/resources/{resource_id}/evidence/{digest}": {
+      "summary": "Evidence",
+      "help": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).",
+      "query": [
+        {
+          "name": "locator",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A record's locator."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/grvt/resources/{resource_id}/credentials": {
+      "summary": "Credentials Status",
+      "help": "Whether the resource has stored credentials: fingerprint, when added, last use and last error.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PUT /v1/grvt/resources/{resource_id}/credentials": {
+      "summary": "Credentials Put",
+      "help": "Test the credentials with one provider call, then seal and store them, replacing any (policy 02 access rule 15.3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "api_key"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Api Key"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/grvt/resources/{resource_id}/credentials": {
+      "summary": "Credentials Delete",
+      "help": "Remove the stored credentials (idempotent).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/grvt/resources/{resource_id}/credentials/test": {
+      "summary": "Credentials Test",
+      "help": "One provider call with the credentials sent; nothing is stored or retained.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "api_key"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Api Key"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    }
+  },
+  "extended": {
+    "GET /v1/extended/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/resources": {
+      "summary": "Resource List",
+      "help": "The tenant's resources that the credential covers, by name (rule 15).",
+      "query": [
+        {
+          "name": "name",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only the resource with this name."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/extended/resources": {
+      "summary": "Resource Create",
+      "help": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "binding",
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          },
+          {
+            "path": [
+              "binding",
+              "account"
+            ],
+            "type": "integer",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Account"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/resources/{resource_id}": {
+      "summary": "Resource Show",
+      "help": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/extended/resources/{resource_id}": {
+      "summary": "Resource Rename",
+      "help": "Rename the resource; its binding and interpretation never change (rule 2.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/extended/resources/{resource_id}": {
+      "summary": "Resource Delete",
+      "help": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/extended/resources/{resource_id}/sync": {
+      "summary": "Start a sync job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "fetch"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Fetch"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/extended/resources/{resource_id}/verification": {
+      "summary": "Start a verify job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": []
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/extended/resources/{resource_id}/verification": {
+      "summary": "Verification",
+      "help": "The latest verification of the current state (rule 48), each checkpoint of an `asset` key with its catalogue `asset_id` (rule 48.12); `POST` runs a live one as a job.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/jobs": {
+      "summary": "Job List",
+      "help": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
+      "query": [
+        {
+          "name": "resource",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this resource."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/jobs/{job_id}": {
+      "summary": "Job Show",
+      "help": "One job with its complete progress, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/extended/jobs/{job_id}/cancel": {
+      "summary": "Job Cancel",
+      "help": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/resources/{resource_id}/records": {
+      "summary": "Records",
+      "help": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
+      "query": [
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Inclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Exclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Full kind names; repeatable."
+        },
+        {
+          "name": "compartment",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A leg compartment, or any inside it."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "legless",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`false` leaves out records without legs."
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "repeated": true,
+          "choices": [
+            "unsolicited"
+          ],
+          "required": false,
+          "help": "`unsolicited` includes records flagged unsolicited, which are left out otherwise."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/resources/{resource_id}/changes": {
+      "summary": "Changes",
+      "help": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
+      "query": [
+        {
+          "name": "since",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": "The version the caller holds; 0 for everything."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/resources/{resource_id}/state": {
+      "summary": "State",
+      "help": "The latest state, or the state replayed up to `at` (rule 46).",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339 or epoch milliseconds."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/resources/{resource_id}/compartments": {
+      "summary": "Compartments",
+      "help": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/resources/{resource_id}/items": {
+      "summary": "Items",
+      "help": "The open items, by id, pinned to a version (rule 50).",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Item kinds; repeatable."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/extended/resources/{resource_id}/export": {
+      "summary": "Export",
+      "help": "Stream the current state with its evidence closure (rule 12).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/extended/resources/{resource_id}/evidence/{digest}": {
+      "summary": "Evidence",
+      "help": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).",
+      "query": [
+        {
+          "name": "locator",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A record's locator."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/extended/resources/{resource_id}/credentials": {
+      "summary": "Credentials Status",
+      "help": "Whether the resource has stored credentials: fingerprint, when added, last use and last error.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PUT /v1/extended/resources/{resource_id}/credentials": {
+      "summary": "Credentials Put",
+      "help": "Test the credentials with one provider call, then seal and store them, replacing any (policy 02 access rule 15.3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "api_key"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Api Key"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/extended/resources/{resource_id}/credentials": {
+      "summary": "Credentials Delete",
+      "help": "Remove the stored credentials (idempotent).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/extended/resources/{resource_id}/credentials/test": {
+      "summary": "Credentials Test",
+      "help": "One provider call with the credentials sent; nothing is stored or retained.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "api_key"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Api Key"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    }
+  },
+  "solana": {
+    "GET /v1/solana/capabilities": {
+      "summary": "Capabilities",
+      "help": "What this unit serves: kinds, edit kinds, optional and unit-specific routes, problems (rule 19).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/resources": {
+      "summary": "Resource List",
+      "help": "The tenant's resources that the credential covers, by name (rule 15).",
+      "query": [
+        {
+          "name": "name",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only the resource with this name."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/solana/resources": {
+      "summary": "Resource Create",
+      "help": "Create a resource with a unit-assigned id; syncs nothing (rules 2.1, 2.5, 3).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          },
+          {
+            "path": [
+              "binding",
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/resources/{resource_id}": {
+      "summary": "Resource Show",
+      "help": "The resource, its binding and its state's version, hash, sync time and stamps (rule 2.6).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "PATCH /v1/solana/resources/{resource_id}": {
+      "summary": "Resource Rename",
+      "help": "Rename the resource; its binding and interpretation never change (rule 2.2).",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "name"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Name"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    },
+    "DELETE /v1/solana/resources/{resource_id}": {
+      "summary": "Resource Delete",
+      "help": "Remove the resource, its state and change log; evidence objects stay (rule 2.4).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/solana/resources/{resource_id}/sync": {
+      "summary": "Start a sync job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": [
+          {
+            "path": [
+              "fetch"
+            ],
+            "type": "boolean",
+            "repeated": false,
+            "choices": [],
+            "required": false,
+            "help": "Fetch"
+          }
+        ]
+      },
+      "job": true,
+      "binary": false
+    },
+    "POST /v1/solana/resources/{resource_id}/verification": {
+      "summary": "Start a verify job",
+      "help": "Queue the job, or return the one already doing it; another writer of the resource is `409 resource-busy`.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": false,
+        "fields": []
+      },
+      "job": true,
+      "binary": false
+    },
+    "GET /v1/solana/resources/{resource_id}/verification": {
+      "summary": "Verification",
+      "help": "The latest verification of the current state (rule 48), each checkpoint of an `asset` key with its catalogue `asset_id` (rule 48.12); `POST` runs a live one as a job.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/jobs": {
+      "summary": "Job List",
+      "help": "The tenant's jobs of the resources the credential covers, newest first, each with its latest progress message.",
+      "query": [
+        {
+          "name": "resource",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Only this resource."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "repeated": false,
+          "choices": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "cancelled"
+          ],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/jobs/{job_id}": {
+      "summary": "Job Show",
+      "help": "One job with its complete progress, and its result or error once finished.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "POST /v1/solana/jobs/{job_id}/cancel": {
+      "summary": "Job Cancel",
+      "help": "Cancel a queued or running job; a running one stops at its next progress message and commits nothing.",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/resources/{resource_id}/records": {
+      "summary": "Chain Records",
+      "help": "One page of current records in `(time, seq, id)` order with the range's coverage, pinned to a version (rule 29); records flagged `unsolicited` only with `include=unsolicited` (rule 28.4).",
+      "query": [
+        {
+          "name": "from",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Inclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "Exclusive; RFC 3339 or epoch ms."
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Full kind names; repeatable."
+        },
+        {
+          "name": "compartment",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A leg compartment, or any inside it."
+        },
+        {
+          "name": "reference",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "from_height",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "to_height",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        },
+        {
+          "name": "legless",
+          "type": "boolean",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "`false` leaves out records without legs."
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "repeated": true,
+          "choices": [
+            "unsolicited"
+          ],
+          "required": false,
+          "help": "`unsolicited` includes records flagged unsolicited, which are left out otherwise."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/resources/{resource_id}/changes": {
+      "summary": "Changes",
+      "help": "Everything that changed after `since`, as stored bodies without attachments (sync.md rule 9); `410 changes-expired` below `min_since` (rule 11).",
+      "query": [
+        {
+          "name": "since",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": true,
+          "help": "The version the caller holds; 0 for everything."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/resources/{resource_id}/state": {
+      "summary": "State",
+      "help": "The latest state, or the state replayed up to `at` (rule 46).",
+      "query": [
+        {
+          "name": "at",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "RFC 3339 or epoch milliseconds."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/resources/{resource_id}/compartments": {
+      "summary": "Compartments",
+      "help": "Every compartment the resource has used, with class, visibility and settlement (rule 32).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/resources/{resource_id}/items": {
+      "summary": "Items",
+      "help": "The open items, by id, pinned to a version (rule 50).",
+      "query": [
+        {
+          "name": "kind",
+          "type": "string",
+          "repeated": true,
+          "choices": [],
+          "required": false,
+          "help": "Item kinds; repeatable."
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "The previous page's `next_cursor`, with the same filters; a newer version makes it `409 version-changed`."
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": ""
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": false
+    },
+    "GET /v1/solana/resources/{resource_id}/export": {
+      "summary": "Export",
+      "help": "Stream the current state with its evidence closure (rule 12).",
+      "query": [],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "GET /v1/solana/resources/{resource_id}/evidence/{digest}": {
+      "summary": "Evidence",
+      "help": "One evidence object byte for byte, or with `locator` the fragment a record points at (rule 13).",
+      "query": [
+        {
+          "name": "locator",
+          "type": "string",
+          "repeated": false,
+          "choices": [],
+          "required": false,
+          "help": "A record's locator."
+        }
+      ],
+      "body": null,
+      "job": false,
+      "binary": true
+    },
+    "POST /v1/solana/probe": {
+      "summary": "Probe",
+      "help": "What a source is before a resource is created for it; calls are metered on the tenant.",
+      "query": [],
+      "body": {
+        "media": "application/json",
+        "required": true,
+        "fields": [
+          {
+            "path": [
+              "address"
+            ],
+            "type": "string",
+            "repeated": false,
+            "choices": [],
+            "required": true,
+            "help": "Address"
+          }
+        ]
+      },
+      "job": false,
+      "binary": false
+    }
   }
 }
