@@ -2,7 +2,7 @@
 
 `litmus-tax` provides the public `litmus` command and a small HTTP SDK. Every command
 calls a Litmus deployment's public routes over HTTP; nothing runs in-process, and the
-package holds no service code ([policy 02 interfaces Rule 7][rule7]). Licensed under
+package holds no service code ([CLI design][cli]). Licensed under
 [Apache-2.0](LICENSE).
 
 ```sh
@@ -14,7 +14,7 @@ litmus auth status
 
 ## Commands
 
-Every command calls one public route ([Rule 7.10][rule7]); `litmus <group> --help` lists
+Every command calls one public route ([CLI design][cli]); `litmus <group> --help` lists
 them, with help and options taken from the services' OpenAPI documents.
 
 ```sh
@@ -51,7 +51,7 @@ list`, whose own `all` parameter shows withdrawn edits: specs#60).
 ## Local deployment
 
 `litmus local render|up|status|down|logs|migrate|bootstrap` are thin conveniences over
-Docker Compose ([Rule 7.8][rule7]): each runs platform's `scripts/local.py` with the same
+Docker Compose ([CLI design][cli]): each runs platform's `scripts/local.py` with the same
 arguments, which renders the development deployment and drives it with plain `docker
 compose`. Until the self-hosted images are published they build from source, so they
 need a platform checkout (`--platform`, `LITMUS_PLATFORM_DIR`, or a `platform/` beside
@@ -147,4 +147,4 @@ Ruff and Pyright settings live in the repository-root `pyproject.toml` under
 Litmus repositories. Choose the installed development interpreter in your editor.
 See the [tooling policy](../platform/docs/technical/python-tooling.md) for details.
 
-[rule7]: docs/cli.md
+[cli]: docs/cli.md
